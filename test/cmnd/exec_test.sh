@@ -74,6 +74,13 @@ function main() {
     cp -p gcov/*.gcov test_results/all_tests/.
     cp -rp lcov test_results/all_tests/.
 
+    # LANG 環境変数が UTF-8 でない場合の処理
+    if [[ "$LANG" != *"UTF-8"* ]]; then
+        find test_results/all_tests/lcov -name "*.gcov.html" | while read -r file; do
+            sed -i "s/charset=UTF-8/charset=${LANG#*.}/" "$file"
+        done
+    fi
+
     make clean-cov > /dev/null
 
     return 0

@@ -2,6 +2,10 @@
 /* 本物の include で define されるため、ここでは define しない */
 /* #define _SAMPLE_INC_H_ */
 
+// vscode の include 解析が、このファイルを解釈してしまうのを防ぐ
+// テストモジュールは先に gmock.h を include するため、下記で誤認識を回避する
+#ifndef GOOGLEMOCK_INCLUDE_GMOCK_GMOCK_H_
+
 #include <stdio.h>
 #include <mock_stdio_extern.h>
 
@@ -25,4 +29,6 @@ extern "C"
 }
 #endif
 
-#endif // _SAMPLE_INC_H_s
+#endif // GOOGLEMOCK_INCLUDE_GMOCK_GMOCK_H_
+
+#endif // _SAMPLE_INC_H_

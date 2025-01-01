@@ -1,4 +1,4 @@
-#include <testcommon.h>
+#include <test_com.h>
 
 char* allocprintf(const char *fmt, ...)
 {

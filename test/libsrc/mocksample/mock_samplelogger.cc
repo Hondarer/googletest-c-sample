@@ -1,7 +1,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
-#include <testcommon.h>
+#include <test_com.h>
 #include <mock_sample.h>
 
 using namespace testing;
@@ -40,7 +40,7 @@ int samplelogger(const int lvl, const char *fmt, ...)
 
     if (mock_samplelogger_enable_trace != 0)
     {
-        printf("  > samplelogger [%d] %s", lvl, str);
+        printf("  > samplelogger %d, %s", lvl, str);
     }
     if (_mock_samplelogger != nullptr)
     {

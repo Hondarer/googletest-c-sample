@@ -1,3 +1,6 @@
+# 副作用を防ぐため、はじめに include する
+include $(WORKSPACE_ROOT)/test/common_flags.mk
+
 # テストプログラムのディレクトリ名と実行体名
 # TARGETDIR := . の場合、カレントディレクトリに実行体を生成する
 TARGETDIR := .
@@ -8,17 +11,19 @@ TARGET := $(shell basename `pwd`)
 SRCS_C := $(wildcard *.c)
 SRCS_CPP := $(wildcard *.cc)
 
+OVERRIDE_INCDIR := \
+	$(WORKSPACE_ROOT)/test/include_override
+
 INCDIR := \
 	/usr/local/include \
 	$(WORKSPACE_ROOT)/test/include \
-	$(WORKSPACE_ROOT)/test/include_override \
 	$(WORKSPACE_ROOT)/prod/include
 
 LIBSDIR := \
 	/usr/local/lib64 \
 	$(WORKSPACE_ROOT)/test/lib
 
-LIBS := -lmockstdio -lmocksample -ltestcommon -lgtest -lgtest_main -lpthread -lgmock -lgcov
+LIBS := -lmockstdio -lmocksample -ltestcom -lgtest -lgtest_main -lpthread -lgmock -lgcov
 
 TESTSH := $(WORKSPACE_ROOT)/test/cmnd/exec_test.sh
 
@@ -29,8 +34,6 @@ LCOVDIR := lcov
 CC := gcc
 CPP := g++
 LD := g++
-
-include $(WORKSPACE_ROOT)/test/common_flags.mk
 
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
 CFLAGS := $(addprefix -I, $(INCDIR)) $(CCOMFLAGS)
@@ -46,8 +49,8 @@ $(TARGETDIR)/$(TARGET): $(OBJS) | $(TARGETDIR)
 # C ソースファイルのコンパイル
 $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR)
 	@if echo $(TEST_TARGET_SRCS_C) | grep -q $(notdir $<); then \
-		echo $(CC) $(DEPFLAGS) $(CFLAGS) -coverage -c -o $@ $<; \
-		$(CC) $(DEPFLAGS) $(CFLAGS) -coverage -c -o $@ $<; \
+		echo $(CC) $(DEPFLAGS) $(addprefix -I, $(OVERRIDE_INCDIR)) $(CFLAGS) -coverage -c -o $@ $<; \
+		$(CC) $(DEPFLAGS) $(addprefix -I, $(OVERRIDE_INCDIR)) $(CFLAGS) -coverage -c -o $@ $<; \
 	else \
 		echo $(CC) $(DEPFLAGS) $(CFLAGS) -c -o $@ $<; \
 		$(CC) $(DEPFLAGS) $(CFLAGS) -c -o $@ $<; \
@@ -56,8 +59,8 @@ $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR)
 # C++ ソースファイルのコンパイル
 $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR)
 	@if echo $(TEST_TARGET_SRCS_CPP) | grep -q $(notdir $<); then \
-		echo $(CPP) $(DEPFLAGS) $(CPPFLAGS) -coverage -c -o $@ $<; \
-		$(CPP) $(DEPFLAGS) $(CPPFLAGS) -coverage -c -o $@ $<; \
+		echo $(CPP) $(DEPFLAGS) $(addprefix -I, $(OVERRIDE_INCDIR)) $(CPPFLAGS) -coverage -c -o $@ $<; \
+		$(CPP) $(DEPFLAGS) $(addprefix -I, $(OVERRIDE_INCDIR)) $(CPPFLAGS) -coverage -c -o $@ $<; \
 	else \
 		echo $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $<; \
 		$(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $<; \
@@ -65,9 +68,9 @@ $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR)
 
 # テスト対象のソースファイルからシンボリックリンクを張る
 $(notdir $(TEST_TARGET_SRCS_C)):
-	ln -s $(TEST_TARGET_SRCS_C) $(notdir $(TEST_TARGET_SRCS_C))
+	ln -s $(shell echo $(TEST_TARGET_SRCS_C) | tr ' ' '\n' | awk '/$@/') $(notdir $@)
 $(notdir $(TEST_TARGET_SRCS_CPP)):
-	ln -s $(TEST_TARGET_SRCS_CPP) $(notdir $(TEST_TARGET_SRCS_CPP))
+	ln -s $(shell echo $(TEST_TARGET_SRCS_C) | tr ' ' '\n' | awk '/$@/') $(notdir $@)
 
 # The empty rule is required to handle the case where the dependency file is deleted.
 $(DEPS):
