@@ -2,8 +2,6 @@
 
 using namespace testing;
 
-static int real_fclose(FILE*);
-
 static Mock_fclose *_mock_fclose = nullptr;
 
 int mock_fclose_enable_trace = 0;
@@ -11,8 +9,7 @@ int mock_fclose_enable_trace = 0;
 Mock_fclose::Mock_fclose()
 {
     ON_CALL(*this, fclose(_))
-        .WillByDefault(Invoke([this](FILE *fp)
-                              { return delegate_real_fclose(fp); }));
+        .WillByDefault(Invoke(delegate_real_fclose));
     _mock_fclose = this;
 }
 
@@ -21,12 +18,7 @@ Mock_fclose::~Mock_fclose()
     _mock_fclose = nullptr;
 }
 
-int Mock_fclose::delegate_real_fclose(FILE *fp)
-{
-    return real_fclose(fp);
-}
-
-static int real_fclose(FILE *fp)
+int delegate_real_fclose(FILE *fp)
 {
     return fclose(fp);
 }
@@ -41,7 +33,7 @@ int mock_fclose(FILE *fp)
     }
     else
     {
-        rtc = real_fclose(fp);
+        rtc = delegate_real_fclose(fp);
     }
     if (mock_fclose_enable_trace != 0)
     {
