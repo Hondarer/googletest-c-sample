@@ -34,7 +34,7 @@ TEST_F(test_samplefunc, call_times_check)
     int rtc = samplefunc(6, 2);
 
     // Assert
-    EXPECT_EQ(rtc, 3);
+    EXPECT_EQ(3, rtc);
 }
 
 TEST_F(test_samplefunc, call_times_check_with_args)
@@ -53,7 +53,7 @@ TEST_F(test_samplefunc, call_times_check_with_args)
     int rtc = samplefunc(12, 0);
 
     // Assert
-    EXPECT_EQ(rtc, -1);
+    EXPECT_EQ(-1, rtc);
 }
 TEST_F(test_samplefunc, will_without_InSequence)
 {
@@ -75,7 +75,7 @@ TEST_F(test_samplefunc, will_without_InSequence)
     int rtc = samplefunc(12, 0);
 
     // Assert
-    EXPECT_EQ(rtc, -1);
+    EXPECT_EQ(-1, rtc);
 }
 
 TEST_F(test_samplefunc, times_with_InSequence)
@@ -97,7 +97,7 @@ TEST_F(test_samplefunc, times_with_InSequence)
     int rtc = samplefunc(12, 0);
 
     // Assert
-    EXPECT_EQ(rtc, -1);
+    EXPECT_EQ(-1, rtc);
 }
 
 TEST_F(test_samplefunc, mix_with_InSequence)
@@ -120,7 +120,7 @@ TEST_F(test_samplefunc, mix_with_InSequence)
     int rtc = samplefunc(12, 0);
 
     // Assert
-    EXPECT_EQ(rtc, -1);
+    EXPECT_EQ(-1, rtc);
 }
 
 #pragma GCC diagnostic pop

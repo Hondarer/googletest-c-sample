@@ -33,7 +33,7 @@ TEST_F(test_samplelogger, normal_call)
     int rtc = samplelogger(LOG_INFO, "%s\n", "normal_call");
 
     // Assert
-    EXPECT_EQ(rtc, 12);
+    EXPECT_EQ(12, rtc);
 }
 
 TEST_F(test_samplelogger, fopen_failed)
@@ -49,7 +49,7 @@ TEST_F(test_samplelogger, fopen_failed)
     int rtc = samplelogger(LOG_INFO, "%s\n", "fopen_failed");
 
     // Assert
-    EXPECT_EQ(rtc, -1);
+    EXPECT_EQ(-1, rtc);
 }
 
 TEST_F(test_samplelogger, fclose_failed)
@@ -59,14 +59,14 @@ TEST_F(test_samplelogger, fclose_failed)
 
     // Pre-Assert
     EXPECT_CALL(mock_fclose, fclose(_))
-        .WillOnce(Invoke([](FILE *fp)
-                         { errno=5; return EOF; }));
+        .WillOnce(InvokeWithoutArgs([]()
+                                    { errno=5; return EOF; }));
 
     // Act
     int rtc = samplelogger(LOG_INFO, "%s\n", "fclose_failed");
 
     // Assert
-    EXPECT_EQ(rtc, -1);
+    EXPECT_EQ(-1, rtc);
 }
 
 #pragma GCC diagnostic pop
