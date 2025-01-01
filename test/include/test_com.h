@@ -45,9 +45,6 @@ extern AssertionResult FileContains(const string &, const string &);
 #define EXPECT_FILE_CONTAINS(file_path, expected_content) \
     EXPECT_TRUE(FileContains(file_path, expected_content))
 
-#define EXPECT_STR_EQ(expected, actual) \
-    EXPECT_PRED_FORMAT2(internal::CmpHelperSTREQ, expected, actual)
-
 #endif // __cplusplus
 
 #endif // _TEST_COM_H_
