@@ -43,7 +43,8 @@ TEST_F(test_samplelogger, fopen_failed)
 
     // Pre-Assert
     EXPECT_CALL(mock_fopen, fopen(_, _))
-        .WillOnce(Return(nullptr));
+        .WillOnce(InvokeWithoutArgs([]()
+                                    { errno=EIO; return nullptr; })); // 5: I/O error
 
     // Act
     int rtc = samplelogger(LOG_INFO, "%s\n", "fopen_failed");
@@ -60,7 +61,7 @@ TEST_F(test_samplelogger, fclose_failed)
     // Pre-Assert
     EXPECT_CALL(mock_fclose, fclose(_))
         .WillOnce(InvokeWithoutArgs([]()
-                                    { errno=5; return EOF; }));
+                                    { errno=EIO; return EOF; })); // 5: I/O error
 
     // Act
     int rtc = samplelogger(LOG_INFO, "%s\n", "fclose_failed");
