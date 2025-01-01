@@ -118,7 +118,9 @@ take-gcov: $(GCOVDIR)
 #	gcov で生成したファイルを削除する
 	-rm -rf $(GCOVDIR)/*
 #	gcov でカバレッジ情報を取得する
-	gcov -bc $(TEST_TARGET_SRCS_C) $(TEST_TARGET_SRCS_CPP) -o $(OBJDIR)
+#	-bc オプションは可読性に問題があるので、使用しない (lcov の結果で確認可能)
+#	gcov -bc $(TEST_TARGET_SRCS_C) $(TEST_TARGET_SRCS_CPP) -o $(OBJDIR)
+	gcov $(TEST_TARGET_SRCS_C) $(TEST_TARGET_SRCS_CPP) -o $(OBJDIR)
 	mv *.gcov $(GCOVDIR)/.
 
 .PHONY: take-lcov
