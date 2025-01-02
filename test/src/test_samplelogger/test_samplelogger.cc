@@ -9,14 +9,11 @@ using namespace testing;
 
 class test_samplelogger : public Test
 {
+protected:
     void SetUp() override
     {
         mock_fopen_enable_trace = 1;
         mock_fclose_enable_trace = 1;
-    }
-
-    void TearDown() override
-    {
     }
 };
 
