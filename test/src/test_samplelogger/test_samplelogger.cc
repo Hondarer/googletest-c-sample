@@ -28,7 +28,7 @@ protected:
 TEST_F(test_samplelogger, normal_call)
 {
     // Arrange
-    Mock_stdio mock_stdio;
+    NiceMock<Mock_stdio> mock_stdio; // 宣言のないデフォルト Mock への呼び出し警告をしない
 
     // Pre-Assert
     EXPECT_CALL(mock_stdio, fopen(_, _))
@@ -60,10 +60,44 @@ TEST_F(test_samplelogger, fopen_failed)
 
 TEST_F(test_samplelogger, fclose_failed)
 {
+    /*
+    Mock の各メソッドは必ず検証するか、NiceMock を使用すること。
+    NiceMock<Mock_stdio> でない場合、以下の警告が出力される。
+
+    GMOCK WARNING:
+    Uninteresting mock function call - taking default action specified at:
+    mock_stdio.cc:20:
+        Function call: fopen(0x47ef52 pointing to "/tmp/sample.log", 0x47ef50 pointing to "a")
+            Returns: 0x3043dea0
+    NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+    > fopen /tmp/sample.log, a -> 3
+
+    GMOCK WARNING:
+    Uninteresting mock function call - taking default action specified at:
+    mock_stdio.cc:23:
+        Function call: fprintf(0x3043dea0, 0x3043da80 pointing to "[2] ")
+            Returns: 4
+    NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+    > fprintf 3, [2]  -> 4
+    > fclose 3 -> -1
+    */
+
+#if 1
     // Arrange
     Mock_stdio mock_stdio;
 
     // Pre-Assert
+    EXPECT_CALL(mock_stdio, fopen(_, _))
+        .Times(1);
+    EXPECT_CALL(mock_stdio, fprintf(_, _))
+        .Times(1);
+#else
+    // Arrange
+    NiceMock<Mock_stdio> mock_stdio;
+
+    // Pre-Assert
+#endif
+
     EXPECT_CALL(mock_stdio, fclose(_))
         .WillOnce(InvokeWithoutArgs([]()
                                     { errno=EIO; return EOF; })); // 5: I/O error
