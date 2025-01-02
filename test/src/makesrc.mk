@@ -11,11 +11,9 @@ TARGET := $(shell basename `pwd`)
 SRCS_C := $(wildcard *.c)
 SRCS_CPP := $(wildcard *.cc)
 
-OVERRIDE_INCDIR := \
-	$(WORKSPACE_ROOT)/test/include_override
-
 INCDIR := \
 	/usr/local/include \
+	$(WORKSPACE_ROOT)/test/include_override \
 	$(WORKSPACE_ROOT)/test/include \
 	$(WORKSPACE_ROOT)/prod/include
 
@@ -58,8 +56,8 @@ $(TARGETDIR)/$(TARGET): $(OBJS) | $(TARGETDIR)
 # C ソースファイルのコンパイル
 $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR)
 	@if echo $(TEST_TARGET_SRCS_C) | grep -q $(notdir $<); then \
-		echo $(CC) $(DEPFLAGS) $(addprefix -I, $(OVERRIDE_INCDIR)) $(CFLAGS) -coverage -c -o $@ $<; \
-		$(CC) $(DEPFLAGS) $(addprefix -I, $(OVERRIDE_INCDIR)) $(CFLAGS) -coverage -c -o $@ $<; \
+		echo $(CC) $(DEPFLAGS) $(CFLAGS) -coverage -c -o $@ $<; \
+		$(CC) $(DEPFLAGS) $(CFLAGS) -coverage -c -o $@ $<; \
 	else \
 		echo $(CC) $(DEPFLAGS) $(CFLAGS) -c -o $@ $<; \
 		$(CC) $(DEPFLAGS) $(CFLAGS) -c -o $@ $<; \
@@ -68,8 +66,8 @@ $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR)
 # C++ ソースファイルのコンパイル
 $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR)
 	@if echo $(TEST_TARGET_SRCS_CPP) | grep -q $(notdir $<); then \
-		echo $(CPP) $(DEPFLAGS) $(addprefix -I, $(OVERRIDE_INCDIR)) $(CPPFLAGS) -coverage -c -o $@ $<; \
-		$(CPP) $(DEPFLAGS) $(addprefix -I, $(OVERRIDE_INCDIR)) $(CPPFLAGS) -coverage -c -o $@ $<; \
+		echo $(CPP) $(DEPFLAGS) $(CPPFLAGS) -coverage -c -o $@ $<; \
+		$(CPP) $(DEPFLAGS) $(CPPFLAGS) -coverage -c -o $@ $<; \
 	else \
 		echo $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $<; \
 		$(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $<; \

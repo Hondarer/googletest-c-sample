@@ -3,12 +3,30 @@
 
 #include <stdio.h>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpadded"
-#include <gmock/gmock.h>
-#pragma GCC diagnostic pop
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
-#include <mock_stdio_extern.h>
+    extern int mock_fclose(FILE *);
+    extern int mock_fflush(FILE *);
+    extern FILE *mock_fopen(const char *, const char *);
+    extern int mock_fprintf(FILE *, const char *, ...) __attribute__((format(printf, 2, 3)));
+
+#ifdef __cplusplus
+}
+#endif
+
+#ifndef GOOGLEMOCK_INCLUDE_GMOCK_GMOCK_H_
+
+#define fclose(stream) mock_fclose(stream)
+#define fflush(stream) mock_fflush(stream)
+#define fopen(filename, modes) mock_fopen(filename, modes)
+#define fprintf(stream, format, ...) mock_fprintf(stream, format, ##__VA_ARGS__)
+
+#else
+
+#include <gmock/gmock.h>
 
 extern int mock_fclose_enable_trace;
 extern int mock_fflush_enable_trace;
@@ -58,5 +76,7 @@ public:
     ~Mock_fprintf();
 };
 extern int delegate_real_fprintf(FILE *, const char *);
+
+#endif // GOOGLEMOCK_INCLUDE_GMOCK_GMOCK_H_
 
 #endif // _MOCK_STDIO_H_

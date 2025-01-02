@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 #include <gmock/gmock.h>
-#include <sampleinc.h>
 
 extern int mock_samplelogger_enable_trace;
 

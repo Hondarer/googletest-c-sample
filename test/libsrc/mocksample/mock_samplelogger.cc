@@ -1,8 +1,15 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpadded"
+#include <gmock/gmock.h>
+#pragma GCC diagnostic pop
+
 #include <test_com.h>
 #include <mock_sample.h>
+
+#include <sampleinc.h>
 
 using namespace testing;
 

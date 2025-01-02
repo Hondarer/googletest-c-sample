@@ -2,32 +2,16 @@
 /* 本物の include で define されるため、ここでは define しない */
 /* #define _SAMPLE_INC_H_ */
 
-// vscode の include 解析が、このファイルを解釈してしまうのを防ぐ
-// テストモジュールは先に gmock.h を include するため、下記で誤認識を回避する
-#ifndef GOOGLEMOCK_INCLUDE_GMOCK_GMOCK_H_
-
-#include <stdio.h>
-#include <mock_stdio_extern.h>
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 /* 本物を include */
 #include "../../prod/include/sampleinc.h"
+
+#include <mock_stdio.h>
+
+#ifndef GOOGLEMOCK_INCLUDE_GMOCK_GMOCK_H_
 
 /* テスト向けの内容改変の例 */
 #undef HELLO_MSG
 #define HELLO_MSG "Hello world, override."
-
-/* モックへのすげ替え */
-#define fopen(filename, modes) mock_fopen(filename, modes)
-#define fclose(fp) mock_fclose(fp)
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // GOOGLEMOCK_INCLUDE_GMOCK_GMOCK_H_
 
