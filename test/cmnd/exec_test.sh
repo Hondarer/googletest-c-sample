@@ -30,7 +30,11 @@ function run_test() {
     cat $temp_file | sed -r 's/\x1b\[[0-9;]*m//g' > results/$test_name/results.log
     rm -f $temp_file
     make take-gcov > /dev/null
-    cp -p gcov/*.gcov results/$test_name/.
+
+    if ls gcov/*.gcov 1> /dev/null 2>&1; then
+        cp -p gcov/*.gcov results/$test_name/.
+    fi
+
     return $result
 }
 
@@ -78,8 +82,13 @@ function main() {
     done
     echo -e "----\nTotal tests\t$(echo "$tests" | wc -l)\nPassed\t$SUCCESS_COUNT\nFailed\t$FAILURE_COUNT" >> results/all_tests/summary.log
     make take-cov > /dev/null
-    cp -p gcov/*.gcov results/all_tests/.
-    cp -rp lcov results/all_tests/.
+
+    if ls gcov/*.gcov 1> /dev/null 2>&1; then
+        cp -p gcov/*.gcov results/all_tests/.
+    fi
+    if ls lcov/* 1> /dev/null 2>&1; then
+        cp -rp lcov results/all_tests/.
+    fi
 
     # LANG 環境変数が UTF-8 でない場合の処理
     if [[ "$LANG" != *"UTF-8"* ]]; then

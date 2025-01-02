@@ -122,6 +122,9 @@ clean-cov:
 .PHONY: take-cov
 take-cov: take-gcov take-lcov
 
+# Check if both variables are empty
+ifneq ($(strip $(TEST_TARGET_SRCS_C)$(TEST_TARGET_SRCS_CPP)),)
+
 .PHONY: take-gcov
 take-gcov: $(GCOVDIR)
 #	gcov で生成したファイルを削除する
@@ -147,6 +150,18 @@ take-lcov: $(LCOVDIR)
 	else \
 		echo "No valid records found in tracefile $(OBJDIR)/$(TARGET).info"; \
 	fi
+
+else
+
+.PHONY: take-gcov
+take-gcov: $(GCOVDIR)
+	@echo "No target source files for coverage measurement."
+
+.PHONY: take-lcov
+take-lcov: $(LCOVDIR)
+	@echo "No target source files for coverage measurement."
+
+endif
 
 .PHONY: test
 test: $(TESTSH) $(TARGETDIR)/$(TARGET)
