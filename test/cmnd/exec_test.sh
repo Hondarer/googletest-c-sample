@@ -38,7 +38,7 @@ function main() {
 
     echo "Listing all tests..."
     tests=$(list_tests)
-    tests=$(echo "$tests" | sort)
+    #tests=$(echo "$tests" | sort)
     echo "Found $(echo "$tests" | wc -l) tests."
 
     for test_name in $tests; do
