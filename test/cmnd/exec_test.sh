@@ -3,6 +3,9 @@
 # 文字コードの設定 (必要時)
 #export LANG=ja_JP.EUC-JP
 
+# このスクリプトのパス
+SCRIPT_DIR=$(dirname "$0")
+
 # テストバイナリのパス
 TEST_BINARY=$(basename `pwd`)
 
@@ -85,7 +88,19 @@ function main() {
         done
     fi
 
-    make clean-cov > /dev/null
+    echo -e ""
+    cat results/all_tests/summary.log
+
+    if [ $FAILURE_COUNT -eq 0 ]; then
+        echo -e "\e[32m"
+            sh $SCRIPT_DIR/banner.sh PASSED
+        echo -e "\e[0m"
+    else
+        echo -e "\e[31m"
+            sh $SCRIPT_DIR/banner.sh FAILED
+        echo -e "\e[0m"
+        return 1
+    fi
 
     return 0
 }
