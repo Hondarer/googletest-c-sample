@@ -8,8 +8,10 @@ extern "C"
 {
 #endif
 
+    extern int mock_fclose(FILE *);
+    extern int mock_fflush(FILE *);
     extern FILE *mock_fopen(const char *, const char *);
-    extern int mock_fclose(FILE *fp);
+    extern int mock_fprintf(FILE *, const char *, ...) __attribute__((format(printf, 2, 3)));
 
 #ifdef __cplusplus
 }
