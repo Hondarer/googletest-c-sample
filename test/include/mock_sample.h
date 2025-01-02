@@ -10,7 +10,7 @@ extern int mock_samplelogger_enable_trace;
 class Mock_samplelogger
 {
 public:
-    MOCK_METHOD2(samplelogger, int(int, const char *));
+    MOCK_METHOD(int, samplelogger, (int, const char *));
 
     Mock_samplelogger();
     ~Mock_samplelogger();

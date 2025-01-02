@@ -7,12 +7,14 @@
 
 using namespace testing;
 
-class MockClass1 {
+class MockClass1
+{
 public:
-    MOCK_METHOD0(myFunction, int());
+    MOCK_METHOD(int, myFunction, ());
 };
 
-TEST(TestUsecase, any_times_with_return_sequential) {
+TEST(TestUsecase, any_times_with_return_sequential)
+{
     InSequence seq; // EXPECT_CALL が順に評価されることを宣言
     MockClass1 mock;
 

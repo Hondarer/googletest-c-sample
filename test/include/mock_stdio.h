@@ -33,49 +33,24 @@ extern int mock_fflush_enable_trace;
 extern int mock_fopen_enable_trace;
 extern int mock_fprintf_enable_trace;
 
-// fclose のモッククラス
-class Mock_fclose
-{
-public:
-    MOCK_METHOD1(fclose, int(FILE *));
-
-    Mock_fclose();
-    ~Mock_fclose();
-};
 extern int delegate_real_fclose(FILE *);
-
-// fflush のモッククラス
-class Mock_fflush
-{
-public:
-    MOCK_METHOD1(fflush, int(FILE *));
-
-    Mock_fflush();
-    ~Mock_fflush();
-};
 extern int delegate_real_fflush(FILE *);
-
-// fopen のモッククラス
-class Mock_fopen
-{
-public:
-    MOCK_METHOD2(fopen, FILE *(const char *, const char *));
-
-    Mock_fopen();
-    ~Mock_fopen();
-};
 extern FILE *delegate_real_fopen(const char *, const char *);
+extern int delegate_real_fprintf(FILE *, const char *);
 
-// fprintf のモッククラス
-class Mock_fprintf
+class Mock_stdio
 {
 public:
-    MOCK_METHOD2(fprintf, int(FILE *, const char *));
+    MOCK_METHOD(int, fclose, (FILE *));
+    MOCK_METHOD(int, fflush, (FILE *));
+    MOCK_METHOD(FILE *, fopen, (const char *, const char *));
+    MOCK_METHOD(int, fprintf, (FILE *, const char *));
 
-    Mock_fprintf();
-    ~Mock_fprintf();
+    Mock_stdio();
+    ~Mock_stdio();
 };
-extern int delegate_real_fprintf(FILE *, const char *);
+
+extern Mock_stdio *_mock_stdio;
 
 #endif // GOOGLEMOCK_INCLUDE_GMOCK_GMOCK_H_
 

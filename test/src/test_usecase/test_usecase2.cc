@@ -10,7 +10,7 @@ using namespace testing;
 class MockClass2
 {
 public:
-    MOCK_METHOD2(myFunction, int(int, int));
+    MOCK_METHOD(int, myFunction, (int, int));
 
     MockClass2()
     {

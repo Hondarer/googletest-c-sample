@@ -9,21 +9,7 @@
 
 using namespace testing;
 
-static Mock_fprintf *_mock_fprintf = nullptr;
-
 int mock_fprintf_enable_trace = 0;
-
-Mock_fprintf::Mock_fprintf()
-{
-    ON_CALL(*this, fprintf(_, _))
-        .WillByDefault(Invoke(delegate_real_fprintf));
-    _mock_fprintf = this;
-}
-
-Mock_fprintf::~Mock_fprintf()
-{
-    _mock_fprintf = nullptr;
-}
 
 // 実際の fprintf 関数を呼び出すモッククラスの中継メソッド
 int delegate_real_fprintf(FILE *stream, const char *str)
@@ -48,9 +34,9 @@ int mock_fprintf(FILE *stream, const char *fmt, ...)
     {
         rtc = -1;
     }
-    else if (_mock_fprintf != nullptr)
+    else if (_mock_stdio != nullptr)
     {
-        rtc = _mock_fprintf->fprintf(stream, str);
+        rtc = _mock_stdio->fprintf(stream, str);
     }
     else
     {
