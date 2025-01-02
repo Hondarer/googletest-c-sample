@@ -23,7 +23,16 @@ LIBSDIR := \
 	/usr/local/lib64 \
 	$(WORKSPACE_ROOT)/test/lib
 
-LIBS := -lmockstdio -lmocksample -ltestcom -lgtest -lgtest_main -lpthread -lgmock -lgcov
+# NO_GTEST_MAIN の値による分岐
+ifneq ($(NO_GTEST_MAIN),)
+    ifeq ($(NO_GTEST_MAIN), 1)
+        GTEST_MAINLIB :=
+    endif
+else
+    GTEST_MAINLIB := -lgtest_main
+endif
+
+LIBS := -lmockstdio -lmocksample -ltestcom -lgtest $(GTEST_MAINLIB) -lpthread -lgmock -lgcov
 
 TESTSH := $(WORKSPACE_ROOT)/test/cmnd/exec_test.sh
 
