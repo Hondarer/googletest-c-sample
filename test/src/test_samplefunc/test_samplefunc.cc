@@ -62,11 +62,9 @@ TEST_F(test_samplefunc, will_without_InSequence)
     //       この場合、.Times と .Will... の混在は可能なるも、複雑なルールになるため注意が必要
     //       また、.Will... の場合、アクション (戻り値の設定) が必要
     EXPECT_CALL(mock_samplelogger, samplelogger(_, _))
-        .WillRepeatedly(Invoke([](int level, const char *message)
-                               { return strlen(message); })); // samplelogger の既定の (下記以外の) 動作を定義
+        .WillRepeatedly(DoDefault()); // samplelogger の既定の (下記以外の) 動作を定義
     EXPECT_CALL(mock_samplelogger, samplelogger(_, StrEq("b is zero\n")))
-        .WillOnce(Invoke([](int level, const char *message)
-                         { return strlen(message); })); // samplelogger に "b is zero\n" の呼び出しが 1 回あること
+        .WillOnce(DoDefault()); // samplelogger に "b is zero\n" の呼び出しが 1 回あること
 
     // Act
     int rtc = samplefunc(12, 0);
@@ -108,8 +106,7 @@ TEST_F(test_samplefunc, mix_with_InSequence)
     EXPECT_CALL(mock_samplelogger, samplelogger(_, _))
         .Times(1); // (1) samplelogger に呼び出しが 1 回あること
     EXPECT_CALL(mock_samplelogger, samplelogger(_, StrEq("b is zero\n")))
-        .WillOnce(Invoke([](int level, const char *message)
-                         { return strlen(message); })); // (2) samplelogger に "b is zero\n" の呼び出しが 1 回あること
+        .WillOnce(DoDefault()); // (2) samplelogger に "b is zero\n" の呼び出しが 1 回あること
     EXPECT_CALL(mock_samplelogger, samplelogger(_, _))
         .Times(1); // (3) samplelogger に呼び出しが 1 回あること
 
