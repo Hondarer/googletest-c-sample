@@ -4,8 +4,6 @@
 #include <mock_stdio.h>
 #include <stdarg.h>
 
-using namespace testing;
-
 int mock_fprintf_enable_trace = 0;
 
 int delegate_real_fprintf(FILE *stream, const char *str)

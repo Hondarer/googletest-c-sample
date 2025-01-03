@@ -2,8 +2,6 @@
 
 #include <mock_stdio.h>
 
-using namespace testing;
-
 int mock_fflush_enable_trace = 0;
 
 int delegate_real_fflush(FILE *fp)

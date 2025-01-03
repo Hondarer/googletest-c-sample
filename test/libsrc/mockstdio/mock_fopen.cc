@@ -2,8 +2,6 @@
 
 #include <mock_stdio.h>
 
-using namespace testing;
-
 int mock_fopen_enable_trace = 0;
 
 FILE *delegate_real_fopen(const char *filename, const char *modes)

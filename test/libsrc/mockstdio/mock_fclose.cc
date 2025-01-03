@@ -2,8 +2,6 @@
 
 #include <mock_stdio.h>
 
-using namespace testing;
-
 int mock_fclose_enable_trace = 0;
 
 int delegate_real_fclose(FILE *fp)
