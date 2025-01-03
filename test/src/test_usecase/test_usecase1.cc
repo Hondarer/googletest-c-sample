@@ -1,9 +1,6 @@
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpadded"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#pragma GCC diagnostic pop
 
 using namespace testing;
 

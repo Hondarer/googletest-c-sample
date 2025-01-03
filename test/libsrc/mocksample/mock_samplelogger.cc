@@ -1,10 +1,4 @@
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpadded"
 #include <gmock/gmock.h>
-#pragma GCC diagnostic pop
 
 #include <test_com.h>
 #include <mock_sample.h>
@@ -13,22 +7,7 @@
 
 using namespace testing;
 
-static Mock_samplelogger *_mock_samplelogger = nullptr;
-
 int mock_samplelogger_enable_trace = 0;
-
-Mock_samplelogger::Mock_samplelogger()
-{
-    ON_CALL(*this, samplelogger(_, _))
-        .WillByDefault(Invoke([](const int lvl, const char *str)
-                              { return strlen(str); }));
-    _mock_samplelogger = this;
-}
-
-Mock_samplelogger::~Mock_samplelogger()
-{
-    _mock_samplelogger = nullptr;
-}
 
 int samplelogger(const int lvl, const char *fmt, ...)
 {
@@ -45,16 +24,17 @@ int samplelogger(const int lvl, const char *fmt, ...)
         return -1;
     }
 
+    if (_mock_sample != nullptr)
+    {
+        rtc = _mock_sample->samplelogger(lvl, str);
+    }
+
     if (mock_samplelogger_enable_trace != 0)
     {
-        printf("  > samplelogger %d, %s", lvl, str);
+        printf("  > samplelogger %d, %s -> %d\n", lvl, str, rtc);
     }
-    if (_mock_samplelogger != nullptr)
-    {
-        rtc = _mock_samplelogger->samplelogger(lvl, str);
-    }
+
     free(str);
+    
     return rtc;
 }
-
-#pragma GCC diagnostic pop

@@ -1,7 +1,4 @@
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpadded"
 #include <gmock/gmock.h>
-#pragma GCC diagnostic pop
 
 #include <mock_stdio.h>
 
@@ -17,6 +14,7 @@ FILE *delegate_real_fopen(const char *filename, const char *modes)
 FILE *mock_fopen(const char *filename, const char *modes)
 {
     FILE *fp;
+
     if (_mock_stdio != nullptr)
     {
         fp = _mock_stdio->fopen(filename, modes);

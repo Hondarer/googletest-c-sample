@@ -6,14 +6,15 @@
 
 extern int mock_samplelogger_enable_trace;
 
-// samplelogger のモッククラス
-class Mock_samplelogger
+class Mock_sample
 {
 public:
     MOCK_METHOD(int, samplelogger, (int, const char *));
 
-    Mock_samplelogger();
-    ~Mock_samplelogger();
+    Mock_sample();
+    ~Mock_sample();
 };
+
+extern Mock_sample *_mock_sample;
 
 #endif // _MOCK_SAMPLE_H_

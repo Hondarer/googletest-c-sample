@@ -19,10 +19,7 @@ extern "C"
 
 #ifdef __cplusplus
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpadded"
 #include <gmock/gmock.h>
-#pragma GCC diagnostic pop
 
 #include <fstream>
 #include <iostream>

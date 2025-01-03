@@ -1,11 +1,5 @@
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpadded"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#pragma GCC diagnostic pop
 
 #include <mock_stdio.h>
 #include <mock_sample.h>
@@ -26,12 +20,12 @@ protected:
 TEST_F(test_samplefunc, call_times_check)
 {
     // Arrange
-    Mock_samplelogger mock_samplelogger;
+    Mock_sample mock_sample;
 
     // Pre-Assert
     // NOTE: シンプルにテスト全体で呼び出し回数だけをチェックするだけであれば、
     //       .Times を定義しておくだけでよい
-    EXPECT_CALL(mock_samplelogger, samplelogger(_, _))
+    EXPECT_CALL(mock_sample, samplelogger(_, _))
         .Times(2);
 
     // Act
@@ -44,13 +38,13 @@ TEST_F(test_samplefunc, call_times_check)
 TEST_F(test_samplefunc, call_times_check_with_args)
 {
     // Arrange
-    Mock_samplelogger mock_samplelogger;
+    Mock_sample mock_sample;
 
     // Pre-Assert
     // NOTE: InSequence 指定がない場合では、後に宣言されたルールから順に評価される。
-    EXPECT_CALL(mock_samplelogger, samplelogger(_, _))
+    EXPECT_CALL(mock_sample, samplelogger(_, _))
         .Times(2); // samplelogger に "b is zero\n" 以外の呼び出しが 2 回あること
-    EXPECT_CALL(mock_samplelogger, samplelogger(_, StrEq("b is zero\n")))
+    EXPECT_CALL(mock_sample, samplelogger(_, StrEq("b is zero\n")))
         .Times(1); // samplelogger に "b is zero\n" の呼び出しが 1 回あること
 
     // Act
@@ -62,15 +56,15 @@ TEST_F(test_samplefunc, call_times_check_with_args)
 TEST_F(test_samplefunc, will_without_InSequence)
 {
     // Arrange
-    Mock_samplelogger mock_samplelogger;
+    Mock_sample mock_sample;
 
     // Pre-Assert
     // NOTE: InSequence 指定がない場合では、後に宣言されたルールから順に評価される。
     //       この場合、.Times と .Will... の混在は可能なるも、複雑なルールになるため注意が必要
     //       また、.Will... の場合、アクション (戻り値の設定) が必要
-    EXPECT_CALL(mock_samplelogger, samplelogger(_, _))
+    EXPECT_CALL(mock_sample, samplelogger(_, _))
         .WillRepeatedly(DoDefault()); // samplelogger の既定の (下記以外の) 動作を定義
-    EXPECT_CALL(mock_samplelogger, samplelogger(_, StrEq("b is zero\n")))
+    EXPECT_CALL(mock_sample, samplelogger(_, StrEq("b is zero\n")))
         .WillOnce(DoDefault()); // samplelogger に "b is zero\n" の呼び出しが 1 回あること
 
     // Act
@@ -84,15 +78,15 @@ TEST_F(test_samplefunc, times_with_InSequence)
 {
     // Arrange
     InSequence seq;
-    Mock_samplelogger mock_samplelogger;
+    Mock_sample mock_sample;
 
     // Pre-Assert
     // NOTE: InSequence により、以下の呼び出し順序は行番号の順に評価されることが保証される
-    EXPECT_CALL(mock_samplelogger, samplelogger(_, _))
+    EXPECT_CALL(mock_sample, samplelogger(_, _))
         .Times(1); // (1) samplelogger に呼び出しが 1 回あること
-    EXPECT_CALL(mock_samplelogger, samplelogger(_, StrEq("b is zero\n")))
+    EXPECT_CALL(mock_sample, samplelogger(_, StrEq("b is zero\n")))
         .Times(1); // (2) samplelogger に "b is zero\n" の呼び出しが 1 回あること
-    EXPECT_CALL(mock_samplelogger, samplelogger(_, _))
+    EXPECT_CALL(mock_sample, samplelogger(_, _))
         .Times(1); // (3) samplelogger に呼び出しが 1 回あること
 
     // Act
@@ -106,15 +100,15 @@ TEST_F(test_samplefunc, mix_with_InSequence)
 {
     // Arrange
     InSequence seq;
-    Mock_samplelogger mock_samplelogger;
+    Mock_sample mock_sample;
 
     // Pre-Assert
     // NOTE: InSequence により、以下の呼び出し順序は行番号の順に評価されることが保証される
-    EXPECT_CALL(mock_samplelogger, samplelogger(_, _))
+    EXPECT_CALL(mock_sample, samplelogger(_, _))
         .Times(1); // (1) samplelogger に呼び出しが 1 回あること
-    EXPECT_CALL(mock_samplelogger, samplelogger(_, StrEq("b is zero\n")))
+    EXPECT_CALL(mock_sample, samplelogger(_, StrEq("b is zero\n")))
         .WillOnce(DoDefault()); // (2) samplelogger に "b is zero\n" の呼び出しが 1 回あること
-    EXPECT_CALL(mock_samplelogger, samplelogger(_, _))
+    EXPECT_CALL(mock_sample, samplelogger(_, _))
         .Times(1); // (3) samplelogger に呼び出しが 1 回あること
 
     // Act
@@ -123,5 +117,3 @@ TEST_F(test_samplefunc, mix_with_InSequence)
     // Assert
     EXPECT_EQ(-1, rtc);
 }
-
-#pragma GCC diagnostic pop

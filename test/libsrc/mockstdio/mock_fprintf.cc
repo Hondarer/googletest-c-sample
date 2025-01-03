@@ -1,7 +1,4 @@
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpadded"
 #include <gmock/gmock.h>
-#pragma GCC diagnostic pop
 
 #include <test_com.h>
 #include <mock_stdio.h>
@@ -11,13 +8,11 @@ using namespace testing;
 
 int mock_fprintf_enable_trace = 0;
 
-// 実際の fprintf 関数を呼び出すモッククラスの中継メソッド
 int delegate_real_fprintf(FILE *stream, const char *str)
 {
     return fprintf(stream, "%s", str);
 }
 
-// モックされた`fprintf`関数
 int mock_fprintf(FILE *stream, const char *fmt, ...)
 {
     va_list args;

@@ -1,7 +1,4 @@
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpadded"
 #include <gmock/gmock.h>
-#pragma GCC diagnostic pop
 
 #include <mock_stdio.h>
 
@@ -17,6 +14,7 @@ int delegate_real_fflush(FILE *fp)
 int mock_fflush(FILE *fp)
 {
     int rtc;
+
     if (_mock_stdio != nullptr)
     {
         rtc = _mock_stdio->fflush(fp);

@@ -1,7 +1,4 @@
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpadded"
 #include <gmock/gmock.h>
-#pragma GCC diagnostic pop
 
 #include <mock_stdio.h>
 
@@ -16,8 +13,9 @@ int delegate_real_fclose(FILE *fp)
 
 int mock_fclose(FILE *fp)
 {
-    int fileno = fp->_fileno; // fclose 内にて初期化されるため、退避
     int rtc;
+    int fileno = fp->_fileno; // fclose 内にて初期化されるため、退避
+
     if (_mock_stdio != nullptr)
     {
         rtc = _mock_stdio->fclose(fp);
