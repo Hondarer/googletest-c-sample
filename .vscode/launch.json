@@ -9,7 +9,7 @@
             "args": [
                 "-c",
                 "cd ${fileDirname} && ./$(basename `pwd`)"
-              ],
+            ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
@@ -27,7 +27,7 @@
             "logging": {
                 "engineLogging": true
             },
-            "internalConsoleOptions": "openOnSessionStart"
+            "internalConsoleOptions": "neverOpen"
         }
     ]
 }
