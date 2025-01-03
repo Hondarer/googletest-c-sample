@@ -31,6 +31,12 @@ int samplelogger(const int lvl, const char *fmt, ...)
 
     if (mock_samplelogger_enable_trace != 0)
     {
+        // '\n' で終わっている場合はトレースが見にくくなるので `\n` を削除
+        size_t len = strlen(str);
+        if (len > 0 && str[len - 1] == '\n') {
+            str[len - 1] = '\0';
+        }
+
         printf("  > samplelogger %d, %s -> %d\n", lvl, str, rtc);
     }
 
