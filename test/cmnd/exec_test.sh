@@ -24,7 +24,13 @@ function run_test() {
     mkdir -p results/$test_name
     local temp_file=$(mktemp)
     local temp_exit_code=$(mktemp)
-    script -q -c "./$TEST_BINARY --gtest_filter=\"$test_name\"; echo \$? > $temp_exit_code" $temp_file
+
+    script -q -c "echo \"----\"; \
+        cat *.cc | awk -v test_name=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
+        echo \"----\"; \
+        ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
+        echo \$? > $temp_exit_code" $temp_file
+
     local result=$(cat $temp_exit_code)
     rm -f $temp_exit_code
     cat $temp_file | sed -r 's/\x1b\[[0-9;]*m//g' > results/$test_name/results.log
@@ -67,7 +73,13 @@ function main() {
     for test_name in $tests; do
         local temp_file=$(mktemp)
         local temp_exit_code=$(mktemp)
-        script -q -c "./$TEST_BINARY --gtest_filter=\"$test_name\"; echo \$? > $temp_exit_code" $temp_file > /dev/null
+
+        script -q -c "echo \"----\"; \
+            cat *.cc | awk -v test_name=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
+            echo \"----\"; \
+            ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
+            echo \$? > $temp_exit_code" $temp_file > /dev/null
+
         local result=$(cat $temp_exit_code)
         rm -f $temp_exit_code
         if [ $result -eq 0 ]; then
