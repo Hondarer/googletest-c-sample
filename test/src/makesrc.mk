@@ -139,14 +139,19 @@ take-lcov: $(LCOVDIR)
 	-rm -rf $(OBJDIR)/*.info
 	-rm -rf $(LCOVDIR)/*
 #	lcov でカバレッジ情報を取得する
-	lcov -d $(OBJDIR) -c -o $(OBJDIR)/$(TARGET).info
+	@if [ -s "$(shell command -v lcov 2> /dev/null)" ]; then \
+		echo lcov -d $(OBJDIR) -c -o $(OBJDIR)/$(TARGET).info; \
+		lcov -d $(OBJDIR) -c -o $(OBJDIR)/$(TARGET).info; \
+	else \
+		echo "lcov not found. Skipping."; \
+	fi
 #	genhtml は空のファイルを指定するとエラーを出力して終了するため
 #	lcov の出力ファイルが空でないか確認してから genhtml を実行する
 	@if [ -s $(OBJDIR)/$(TARGET).info ]; then \
 		echo genhtml -o $(LCOVDIR) $(OBJDIR)/$(TARGET).info; \
 		genhtml -o $(LCOVDIR) $(OBJDIR)/$(TARGET).info; \
 	else \
-		echo "No valid records found in tracefile $(OBJDIR)/$(TARGET).info"; \
+		echo "No valid records found in tracefile $(OBJDIR)/$(TARGET).info."; \
 	fi
 
 else
