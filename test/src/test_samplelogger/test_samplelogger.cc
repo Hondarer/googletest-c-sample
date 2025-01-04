@@ -9,7 +9,6 @@ using namespace testing;
 
 class test_samplelogger : public Test
 {
-protected:
     void SetUp() override
     {
         mock_fclose_enable_trace = 1;

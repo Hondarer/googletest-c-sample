@@ -10,7 +10,6 @@ using namespace testing;
 
 class test_samplefunc : public Test
 {
-protected:
     void SetUp() override
     {
         mock_samplelogger_enable_trace = 1;
