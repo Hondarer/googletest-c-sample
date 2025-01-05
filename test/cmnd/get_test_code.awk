@@ -21,42 +21,60 @@ BEGIN {
 
 # 複数行コメントの開始と終了が同じ行にある場合
 /\/\*.*\*\// {
-    buffer = buffer $0 "\n";
-    next;
+    if (!extracting) {
+        buffer = buffer $0 "\n";
+        next;
+    }
 }
 
 # 複数行コメントの開始
 /\/\*/ {
-    in_multiline_comment = 1;
-    buffer = buffer $0 "\n";
-    next;
+    if (!extracting) {
+        in_multiline_comment = 1;
+        buffer = buffer $0 "\n";
+        next;
+    }
 }
 
 # 複数行コメントの終了
 /\*\// {
-    in_multiline_comment = 0;
-    buffer = buffer $0 "\n";
-    next;
+    if (!extracting) {
+        in_multiline_comment = 0;
+        buffer = buffer $0 "\n";
+        next;
+    }
 }
 
 # 複数行コメント中はバッファに追加
 in_multiline_comment {
-    buffer = buffer $0 "\n";
-    next;
+    if (!extracting) {
+        buffer = buffer $0 "\n";
+        next;
+    }
 }
 
 # 行コメントをバッファに追加
 /^[[:space:]]*\/\// {
-    buffer = buffer $0 "\n";
-    next;
+    if (!extracting) {
+        buffer = buffer $0 "\n";
+        next;
+    }
 }
 
 # 空行でバッファをクリア（複数行コメント中を除く）
 /^[[:space:]]*$/ {
-    if (!in_multiline_comment && buffer != "") {
+    if (!extracting && !in_multiline_comment && buffer != "") {
         buffer = "";  # バッファをクリア
+        next;
     }
-    next;
+}
+
+# } を見つけたらバッファをクリア
+/^[[:space:]]*}[[:space:]]*$/ {
+    if (!extracting) {
+        buffer = "";
+        next;
+    }
 }
 
 # TEST, TEST_F, TEST_P の形式にマッチするテストの開始地点を判定
