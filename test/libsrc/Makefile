@@ -7,7 +7,7 @@ all : $(SUBDIRS)
 clean : $(SUBDIRS)
 
 .PHONY: test
-test :
+test : $(SUBDIRS)
 
 .PHONY: $(SUBDIRS)
 $(SUBDIRS) : 

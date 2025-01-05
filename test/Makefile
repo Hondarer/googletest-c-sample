@@ -2,9 +2,6 @@ SUBDIRS = \
 	libsrc \
 	src
 
-TESTDIRS = \
-	src
-
 .PHONY: all
 all : $(SUBDIRS)
 
@@ -12,7 +9,7 @@ all : $(SUBDIRS)
 clean : $(SUBDIRS)
 
 .PHONY: test
-test : $(TESTDIRS)
+test : $(SUBDIRS)
 
 .PHONY: $(SUBDIRS)
 $(SUBDIRS) :

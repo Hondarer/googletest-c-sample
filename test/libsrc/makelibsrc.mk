@@ -64,7 +64,5 @@ clean:
     fi
 	-rm -rf $(OBJDIR)
 
-# make all test をワークスペースのルートで実行した場合、
-# test ターゲットが伝播してくるため、無処理であることを明示する
 .PHONY: test
-test:
+test: all
