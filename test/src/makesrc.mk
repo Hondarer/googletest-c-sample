@@ -21,6 +21,8 @@ LIBSDIR := \
 	/usr/local/lib64 \
 	$(WORKSPACE_ROOT)/test/lib
 
+LIBSFILES := $(shell for dir in $(LIBSDIR); do find $$dir -maxdepth 1 -type f; done)
+
 # NO_GTEST_MAIN の値による分岐
 ifneq ($(NO_GTEST_MAIN),)
     ifeq ($(NO_GTEST_MAIN), 1)
@@ -46,12 +48,12 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
 CFLAGS := $(addprefix -I, $(INCDIR)) $(CCOMFLAGS)
 CPPFLAGS := $(addprefix -I, $(INCDIR)) $(CPPCOMFLAGS)
 LDFLAGS := $(addprefix -L, $(LIBSDIR))
-OBJS := $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(SRCS_CPP:.cc=.o) $(TEST_TARGET_SRCS_C:.c=.o) $(TEST_TARGET_SRCS_CPP:.cc=.o)))
-DEPS := $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(SRCS_CPP:.cc=.d) $(TEST_TARGET_SRCS_C:.c=.d) $(TEST_TARGET_SRCS_CPP:.cc=.d)))
+OBJS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(SRCS_CPP:.cc=.o) $(TEST_TARGET_SRCS_C:.c=.o) $(TEST_TARGET_SRCS_CPP:.cc=.o))))
+DEPS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(SRCS_CPP:.cc=.d) $(TEST_TARGET_SRCS_C:.c=.d) $(TEST_TARGET_SRCS_CPP:.cc=.d))))
 
 # 実行体の生成
-$(TARGETDIR)/$(TARGET): $(OBJS) | $(TARGETDIR)
-	$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
+$(TARGETDIR)/$(TARGET): $(OBJS) $(LIBSFILES) | $(TARGETDIR)
+	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
 # C ソースファイルのコンパイル
 $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR)
