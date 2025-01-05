@@ -52,6 +52,7 @@ TEST_F(test_samplefunc, call_times_check_with_args)
     // Assert
     EXPECT_EQ(-1, rtc);
 }
+/* テストのコメント テスト結果にも載る */
 TEST_F(test_samplefunc, will_without_InSequence)
 {
     // Arrange
