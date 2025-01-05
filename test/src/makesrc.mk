@@ -23,16 +23,12 @@ LIBSDIR := \
 
 LIBSFILES := $(shell for dir in $(LIBSDIR); do find $$dir -maxdepth 1 -type f; done)
 
-# NO_GTEST_MAIN の値による分岐
+TEST_LIBS := -lgtest -lgtest_main -lpthread -lgmock -lgcov
 ifneq ($(NO_GTEST_MAIN),)
-    ifeq ($(NO_GTEST_MAIN), 1)
-        GTEST_MAINLIB :=
-    endif
-else
-    GTEST_MAINLIB := -lgtest_main
+	ifeq ($(NO_GTEST_MAIN), 1)
+		TEST_LIBS := $(filter-out -lgtest_main, $(TEST_LIBS))
+	endif
 endif
-
-LIBS := -lmockstdio -lmocksample -ltestcom -lgtest $(GTEST_MAINLIB) -lpthread -lgmock -lgcov
 
 TESTSH := $(WORKSPACE_ROOT)/test/cmnd/exec_test.sh
 
@@ -53,7 +49,7 @@ DEPS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(SRCS_CPP:.cc=.
 
 # 実行体の生成
 $(TARGETDIR)/$(TARGET): $(OBJS) $(LIBSFILES) | $(TARGETDIR)
-	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LIBS) $(TEST_LIBS)
 
 # C ソースファイルのコンパイル
 $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR)

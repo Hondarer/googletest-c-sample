@@ -17,5 +17,8 @@ TEST_TARGET_SRCS_C := \
 	$(WORKSPACE_ROOT)/prod/libsrc/sample/samplelogger.c
 TEST_TARGET_SRCS_CPP :=
 
+# ライブラリの指定
+LIBS := -lmockstdio -lmocksample -ltestcom
+
 # src の Makefile テンプレートをインクルード
 include $(WORKSPACE_ROOT)/test/src/makesrc.mk
