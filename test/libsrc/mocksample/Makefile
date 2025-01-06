@@ -10,5 +10,8 @@ WORKSPACE_ROOT := $(shell \
     done \
 )
 
+CCOMFLAGS := -g
+CPPCOMFLAGS := -g
+
 # libsrc の Makefile テンプレートをインクルード
 include $(WORKSPACE_ROOT)/test/libsrc/makelibsrc.mk
