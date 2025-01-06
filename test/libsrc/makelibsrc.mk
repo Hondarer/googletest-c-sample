@@ -22,8 +22,8 @@ CC := gcc
 CPP := g++
 
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
-CFLAGS := $(addprefix -I, $(INCDIR)) $(CCOMFLAGS)
-CPPFLAGS := $(addprefix -I, $(INCDIR)) $(CPPCOMFLAGS)
+CFLAGS := $(addprefix -I, $(INCDIR)) $(CCOMFLAGS) -g
+CPPFLAGS := $(addprefix -I, $(INCDIR)) $(CPPCOMFLAGS) -g
 OBJS := $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(SRCS_CPP:.cc=.o)))
 DEPS := $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(SRCS_CPP:.cc=.d)))
 

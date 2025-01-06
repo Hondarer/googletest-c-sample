@@ -41,8 +41,8 @@ CPP := g++
 LD := g++
 
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
-CFLAGS := $(addprefix -I, $(INCDIR)) $(CCOMFLAGS)
-CPPFLAGS := $(addprefix -I, $(INCDIR)) $(CPPCOMFLAGS)
+CFLAGS := $(addprefix -I, $(INCDIR)) $(CCOMFLAGS) -g
+CPPFLAGS := $(addprefix -I, $(INCDIR)) $(CPPCOMFLAGS) -g
 LDFLAGS := $(addprefix -L, $(LIBSDIR))
 OBJS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(SRCS_CPP:.cc=.o) $(TEST_TARGET_SRCS_C:.c=.o) $(TEST_TARGET_SRCS_CPP:.cc=.o))))
 DEPS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(SRCS_CPP:.cc=.d) $(TEST_TARGET_SRCS_C:.c=.d) $(TEST_TARGET_SRCS_CPP:.cc=.d))))
@@ -105,7 +105,7 @@ clean: clean-cov
 		rm -f $(notdir $(TEST_TARGET_SRCS_C)) $(notdir $(TEST_TARGET_SRCS_CPP)); \
 	fi
 	-rm -rf $(OBJDIR)
-	-rm -f $(TARGETDIR)/$(TARGET)
+	-rm -f $(TARGETDIR)/$(TARGET) core
 
 .PHONY: clean-cov
 clean-cov:
