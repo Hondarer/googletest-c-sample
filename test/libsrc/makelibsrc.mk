@@ -21,9 +21,17 @@ OBJDIR := obj
 CC := gcc
 CPP := g++
 
+# -g が含まれていない場合に追加
+ifeq ($(findstring -g,$(CCOMFLAGS)),)
+  CCOMFLAGS += -g
+endif
+ifeq ($(findstring -g,$(CPPCOMFLAGS)),)
+  CPPCOMFLAGS += -g
+endif
+
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
-CFLAGS := $(addprefix -I, $(INCDIR)) $(CCOMFLAGS) -g
-CPPFLAGS := $(addprefix -I, $(INCDIR)) $(CPPCOMFLAGS) -g
+CFLAGS := $(addprefix -I, $(INCDIR)) $(CCOMFLAGS)
+CPPFLAGS := $(addprefix -I, $(INCDIR)) $(CPPCOMFLAGS)
 OBJS := $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(SRCS_CPP:.cc=.o)))
 DEPS := $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(SRCS_CPP:.cc=.d)))
 

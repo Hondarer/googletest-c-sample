@@ -40,9 +40,17 @@ CC := gcc
 CPP := g++
 LD := g++
 
+# -g が含まれていない場合に追加
+ifeq ($(findstring -g,$(CCOMFLAGS)),)
+  CCOMFLAGS += -g
+endif
+ifeq ($(findstring -g,$(CPPCOMFLAGS)),)
+  CPPCOMFLAGS += -g
+endif
+
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
-CFLAGS := $(addprefix -I, $(INCDIR)) $(CCOMFLAGS) -g
-CPPFLAGS := $(addprefix -I, $(INCDIR)) $(CPPCOMFLAGS) -g
+CFLAGS := $(addprefix -I, $(INCDIR)) $(CCOMFLAGS)
+CPPFLAGS := $(addprefix -I, $(INCDIR)) $(CPPCOMFLAGS)
 LDFLAGS := $(addprefix -L, $(LIBSDIR))
 OBJS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(SRCS_CPP:.cc=.o) $(TEST_TARGET_SRCS_C:.c=.o) $(TEST_TARGET_SRCS_CPP:.cc=.o))))
 DEPS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(SRCS_CPP:.cc=.d) $(TEST_TARGET_SRCS_C:.c=.d) $(TEST_TARGET_SRCS_CPP:.cc=.d))))
