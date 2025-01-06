@@ -1,3 +1,5 @@
+#include <gmock/gmock.h>
+
 #include <test_com.h>
 
 AssertionResult FileExists(const string &file_path)
@@ -39,7 +41,6 @@ AssertionResult FileContains(const string &file_path, const string &expected_con
     {
         if (line.find(expected_content) != string::npos)
         {
-            cout << "String \"" << expected_content << "\" found in file " << file_path << ", \"" << line << "\"" << endl;
             return AssertionSuccess();
         }
     }
