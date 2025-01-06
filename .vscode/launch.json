@@ -8,7 +8,7 @@
             "program": "/bin/bash",
             "args": [
                 "-c",
-                "cd ${fileDirname} && ./$(basename `pwd`)"
+                "./$(basename `pwd`)"
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
