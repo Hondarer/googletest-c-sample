@@ -1,1 +1,0 @@
-/home/user/googletest-c-sample/prod/libsrc/sample/samplelogger.c

@@ -74,8 +74,10 @@ $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR)
 # テスト対象のソースファイルからシンボリックリンクを張る
 $(notdir $(TEST_TARGET_SRCS_C)):
 	ln -s $(shell echo $(TEST_TARGET_SRCS_C) | tr ' ' '\n' | awk '/$@/') $(notdir $@)
+	echo $(notdir $@) >> .gitignore
 $(notdir $(TEST_TARGET_SRCS_CPP)):
 	ln -s $(shell echo $(TEST_TARGET_SRCS_C) | tr ' ' '\n' | awk '/$@/') $(notdir $@)
+	echo $(notdir $@) >> .gitignore
 
 # The empty rule is required to handle the case where the dependency file is deleted.
 $(DEPS):
@@ -104,6 +106,7 @@ clean: clean-cov
 		echo rm -f $(notdir $(TEST_TARGET_SRCS_C)) $(notdir $(TEST_TARGET_SRCS_CPP)); \
 		rm -f $(notdir $(TEST_TARGET_SRCS_C)) $(notdir $(TEST_TARGET_SRCS_CPP)); \
 	fi
+	-rm -f .gitignore
 	-rm -rf $(OBJDIR)
 	-rm -f $(TARGETDIR)/$(TARGET) core
 
