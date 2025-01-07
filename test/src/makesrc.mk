@@ -95,10 +95,18 @@ $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR)
 # テスト対象のソースファイルからシンボリックリンクを張る
 $(notdir $(TEST_TARGET_SRCS_C)):
 	ln -s $(shell echo $(TEST_TARGET_SRCS_C) | tr ' ' '\n' | awk '/$@/') $(notdir $@)
+#	.gitignore に対象ファイルを追加
 	echo $(notdir $@) >> .gitignore
+	@tempfile=$$(mktemp) && \
+	sort .gitignore | uniq > $$tempfile && \
+	mv $$tempfile .gitignore
 $(notdir $(TEST_TARGET_SRCS_CPP)):
-	ln -s $(shell echo $(TEST_TARGET_SRCS_C) | tr ' ' '\n' | awk '/$@/') $(notdir $@)
+	ln -s $(shell echo $(TEST_TARGET_SRCS_CPP) | tr ' ' '\n' | awk '/$@/') $(notdir $@)
+#	.gitignore に対象ファイルを追加
 	echo $(notdir $@) >> .gitignore
+	@tempfile=$$(mktemp) && \
+	sort .gitignore | uniq > $$tempfile && \
+	mv $$tempfile .gitignore
 
 # The empty rule is required to handle the case where the dependency file is deleted.
 $(DEPS):
@@ -127,7 +135,14 @@ clean: clean-cov
 		echo rm -f $(notdir $(TEST_TARGET_SRCS_C)) $(notdir $(TEST_TARGET_SRCS_CPP)); \
 		rm -f $(notdir $(TEST_TARGET_SRCS_C)) $(notdir $(TEST_TARGET_SRCS_CPP)); \
 	fi
+# .gitignore の再生成 (コミット差分が出ないように)
 	-rm -f .gitignore
+	@for ignorefile in $(notdir $(TEST_TARGET_SRCS_C)) $(notdir $(TEST_TARGET_SRCS_CPP)); \
+		do echo $$ignorefile >> .gitignore; \
+		tempfile=$$(mktemp) && \
+		sort .gitignore | uniq > $$tempfile && \
+		mv $$tempfile .gitignore; \
+	done
 	-rm -rf $(OBJDIR)
 	-rm -f $(TARGETDIR)/$(TARGET) core
 
