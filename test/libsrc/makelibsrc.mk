@@ -1,11 +1,24 @@
 # 副作用を防ぐため、はじめに include する
 include $(WORKSPACE_ROOT)/test/common_flags.mk
 
+# ソースファイルのエンコード指定から LANG を得る
+ifeq ($(VSCODE_FILES_ENCODING),utf8)
+	FILES_LANG := ja_JP.UTF-8
+else ifeq ($(VSCODE_FILES_ENCODING),eucjp)
+	FILES_LANG := ja_JP.eucjp
+else
+	FILES_LANG := $(LANG)
+endif
+
 # アーカイブのディレクトリ名とアーカイブ名
 # TARGETDIR := . の場合、カレントディレクトリに実行体を生成する
-TARGETDIR := $(WORKSPACE_ROOT)/test/lib
+ifeq ($(TARGETDIR),)
+	TARGETDIR := $(WORKSPACE_ROOT)/test/lib
+endif
 # ディレクトリ名をアーカイブ名にする
-TARGET := lib$(shell basename `pwd`).a
+ifeq ($(TARGET),)
+	TARGET := lib$(shell basename `pwd`).a
+endif
 
 # コンパイル対象のソースファイル (カレントディレクトリから自動収集)
 SRCS_C := $(wildcard *.c)
@@ -41,11 +54,11 @@ $(TARGETDIR)/$(TARGET): $(OBJS) | $(TARGETDIR)
 
 # C ソースファイルのコンパイル
 $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR) $(TARGETDIR)
-	$(CC) $(DEPFLAGS) $(CFLAGS) -c -o $@ $<
+	set -o pipefail; LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf
 
 # C++ ソースファイルのコンパイル
 $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR) $(TARGETDIR)
-	$(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $<
+	set -o pipefail; LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf
 
 # The empty rule is required to handle the case where the dependency file is deleted.
 $(DEPS):
@@ -73,4 +86,4 @@ clean:
 	-rm -rf $(OBJDIR)
 
 .PHONY: test
-test: all
+test: $(TARGETDIR)/$(TARGET)

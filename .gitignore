@@ -8,8 +8,8 @@
 !Makefile
 
 # 以下は管理対象外
+test/lib
 obj
-lib
 gcov
 lcov
 results

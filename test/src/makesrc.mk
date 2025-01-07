@@ -1,11 +1,24 @@
 # 副作用を防ぐため、はじめに include する
 include $(WORKSPACE_ROOT)/test/common_flags.mk
 
+# ソースファイルのエンコード指定から LANG を得る
+ifeq ($(VSCODE_FILES_ENCODING),utf8)
+	FILES_LANG := ja_JP.UTF-8
+else ifeq ($(VSCODE_FILES_ENCODING),eucjp)
+	FILES_LANG := ja_JP.eucjp
+else
+	FILES_LANG := $(LANG)
+endif
+
 # テストプログラムのディレクトリ名と実行体名
 # TARGETDIR := . の場合、カレントディレクトリに実行体を生成する
-TARGETDIR := .
+ifeq ($(TARGETDIR),)
+	TARGETDIR := .
+endif
 # ディレクトリ名を実行体名にする
-TARGET := $(shell basename `pwd`)
+ifeq ($(TARGET),)
+	TARGET := $(shell basename `pwd`)
+endif
 
 # コンパイル対象のソースファイル (カレントディレクトリから自動収集)
 SRCS_C := $(wildcard *.c)
@@ -57,26 +70,26 @@ DEPS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(SRCS_CPP:.cc=.
 
 # 実行体の生成
 $(TARGETDIR)/$(TARGET): $(OBJS) $(LIBSFILES) | $(TARGETDIR)
-	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LIBS) $(TEST_LIBS)
+	set -o pipefail; LANG=$(FILES_LANG) $(LD) $(LDFLAGS) -o $@ $(OBJS) $(LIBS) $(TEST_LIBS) -fdiagnostics-color=always 2>&1 | nkf
 
 # C ソースファイルのコンパイル
 $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR)
-	@if echo $(TEST_TARGET_SRCS_C) | grep -q $(notdir $<); then \
-		echo $(CC) $(DEPFLAGS) $(CFLAGS) -coverage -c -o $@ $<; \
-		$(CC) $(DEPFLAGS) $(CFLAGS) -coverage -c -o $@ $<; \
+	@set -o pipefail; if echo $(TEST_TARGET_SRCS_C) | grep -q $(notdir $<); then \
+		echo LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS) -coverage -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
+		LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS) -coverage -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 	else \
-		echo $(CC) $(DEPFLAGS) $(CFLAGS) -c -o $@ $<; \
-		$(CC) $(DEPFLAGS) $(CFLAGS) -c -o $@ $<; \
+		echo LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
+		LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 	fi
 
 # C++ ソースファイルのコンパイル
 $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR)
-	@if echo $(TEST_TARGET_SRCS_CPP) | grep -q $(notdir $<); then \
-		echo $(CPP) $(DEPFLAGS) $(CPPFLAGS) -coverage -c -o $@ $<; \
-		$(CPP) $(DEPFLAGS) $(CPPFLAGS) -coverage -c -o $@ $<; \
+	@set -o pipefail; if echo $(TEST_TARGET_SRCS_CPP) | grep -q $(notdir $<); then \
+		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -coverage -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
+		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -coverage -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 	else \
-		echo $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $<; \
-		$(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $<; \
+		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
+		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 	fi
 
 # テスト対象のソースファイルからシンボリックリンクを張る
@@ -177,4 +190,4 @@ endif
 
 .PHONY: test
 test: $(TESTSH) $(TARGETDIR)/$(TARGET)
-	@sh $(TESTSH)
+	@sh $(TESTSH) 2>&1 | nkf

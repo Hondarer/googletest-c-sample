@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# 文字コードの設定 (必要時)
-#export LANG=ja_JP.EUC-JP
-
 # このスクリプトのパス
 SCRIPT_DIR=$(dirname "$0")
 
@@ -25,7 +22,7 @@ function run_test() {
     local temp_file=$(mktemp)
     local temp_exit_code=$(mktemp)
 
-    script -q -c "echo \"----\"; \
+    LANG=C script -q -c "echo \"----\"; \
         cat *.cc | awk -v test_name=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
         echo \"----\"; \
         ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
@@ -74,7 +71,7 @@ function main() {
         local temp_file=$(mktemp)
         local temp_exit_code=$(mktemp)
 
-        script -q -c "echo \"----\"; \
+        LANG=C script -q -c "echo \"----\"; \
             cat *.cc | awk -v test_name=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
             echo \"----\"; \
             ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
