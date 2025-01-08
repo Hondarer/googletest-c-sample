@@ -41,7 +41,9 @@ function run_test() {
     make take-gcov > /dev/null
 
     if ls gcov/*.gcov 1> /dev/null 2>&1; then
-        cp -p gcov/*.gcov results/$test_name/.
+        for file in gcov/*.gcov; do
+            cp -p "$file" "results/$test_name/$(basename "$file").txt"
+        done
     fi
 
     return $result
@@ -99,7 +101,9 @@ function main() {
     make take-cov > /dev/null
 
     if ls gcov/*.gcov 1> /dev/null 2>&1; then
-        cp -p gcov/*.gcov results/all_tests/.
+        for file in gcov/*.gcov; do
+            cp -p "$file" "results/all_tests/$(basename "$file").txt"
+        done
     fi
     if ls lcov/* 1> /dev/null 2>&1; then
         cp -rp lcov results/all_tests/.
