@@ -2,13 +2,7 @@
 include $(WORKSPACE_ROOT)/test/common_flags.mk
 
 # ソースファイルのエンコード指定から LANG を得る
-ifeq ($(VSCODE_FILES_ENCODING),utf8)
-	FILES_LANG := ja_JP.UTF-8
-else ifeq ($(VSCODE_FILES_ENCODING),eucjp)
-	FILES_LANG := ja_JP.eucjp
-else
-	FILES_LANG := $(LANG)
-endif
+FILES_LANG := $(shell sh $(WORKSPACE_ROOT)/test/cmnd/get_files_lang.sh $(WORKSPACE_ROOT))
 
 # アーカイブのディレクトリ名とアーカイブ名
 # TARGETDIR := . の場合、カレントディレクトリに実行体を生成する

@@ -3,6 +3,12 @@
 # このスクリプトのパス
 SCRIPT_DIR=$(dirname "$0")
 
+# ワークスペースのルートディレクトリ
+WORKSPACE_ROOT=$SCRIPT_DIR/../../
+
+# ソースファイルのエンコード指定から LANG を得る
+FILES_LANG=$(sh $SCRIPT_DIR/get_files_lang.sh $WORKSPACE_ROOT)
+
 # テストバイナリのパス
 TEST_BINARY=$(basename `pwd`)
 
@@ -22,7 +28,7 @@ function run_test() {
     local temp_file=$(mktemp)
     local temp_exit_code=$(mktemp)
 
-    LANG=C script -q -c "echo \"----\"; \
+    LANG=$FILES_LANG script -q -c "echo \"----\"; \
         cat *.cc | awk -v test_name=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
         echo \"----\"; \
         ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
@@ -71,7 +77,7 @@ function main() {
         local temp_file=$(mktemp)
         local temp_exit_code=$(mktemp)
 
-        LANG=C script -q -c "echo \"----\"; \
+        LANG=$FILES_LANG script -q -c "echo \"----\"; \
             cat *.cc | awk -v test_name=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
             echo \"----\"; \
             ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
@@ -99,10 +105,10 @@ function main() {
         cp -rp lcov results/all_tests/.
     fi
 
-    # LANG 環境変数が UTF-8 でない場合の処理
-    if [[ "$LANG" != *"UTF-8"* ]]; then
+    # FILES_LANG が utf-8 でない場合の処理
+    if [[ ! "${FILES_LANG}" =~ [Uu][Tt][Ff][-+_]*8 ]]; then
         find results/all_tests/lcov -name "*.gcov.html" | while read -r file; do
-            sed -i "s/charset=UTF-8/charset=${LANG#*.}/" "$file"
+            sed -i "s/charset=UTF-8/charset=${FILES_LANG#*.}/" "$file"
         done
     fi
 
