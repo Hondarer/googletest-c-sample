@@ -1,6 +1,13 @@
 #!/bin/bash
 #set -x
 
+# NOTE: settings.json に以下記載すれば環境変数を設定できるが、
+#       統合ターミナル外から make された場合を考慮して、自身で files.encoding の内容を得ることとしている。
+# 
+#     "terminal.integrated.env.linux": {
+#         "VSCODE_FILES_ENCODING": "${config:files.encoding}"
+#     } // ターミナルの VSCODE_FILES_ENCODING 環境変数に files.encoding の内容を設定する
+
 # 引数チェック
 if [ "$#" -ne 1 ]; then
   echo "Usage: $0 <workspace_directory>"
