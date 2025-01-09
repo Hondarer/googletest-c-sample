@@ -28,6 +28,8 @@ function run_test() {
     local temp_file=$(mktemp)
     local temp_exit_code=$(mktemp)
 
+    # テストコードに着色する場合:
+    # cat *.cc | awk -v test_name=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk | source-highlight -s cpp -f esc;
     LANG=$FILES_LANG script -q -c "echo \"----\"; \
         cat *.cc | awk -v test_name=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
         echo \"----\"; \
