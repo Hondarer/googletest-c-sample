@@ -8,6 +8,10 @@
 #         "VSCODE_FILES_ENCODING": "${config:files.encoding}"
 #     } // ターミナルの VSCODE_FILES_ENCODING 環境変数に files.encoding の内容を設定する
 
+# NOTE: jq コマンドは、json フォーマットを厳密にチェックするので
+#       setting.json 記載時に注意が必要。末尾にカンマがある等で失敗する。
+#       sed を使った実装をデフォルトにしているが、この場合、setting.json の改行位置に注意。
+
 # 引数チェック
 if [ "$#" -ne 1 ]; then
   echo "Usage: $0 <workspace_directory>"
@@ -29,8 +33,9 @@ GLOBAL_SETTINGS="$HOME/.config/Code/User/settings.json"
 get_files_encoding() {
   local settings_file=$1
   if [ -f "$settings_file" ]; then
-    encoding=$(jq -r '."files.encoding"' "$settings_file" 2>/dev/null)
-    if [ "$encoding" != "" ]; then
+    #encoding=$(jq -r '."files.encoding"' "$settings_file")
+    encoding=$(grep -o '"files.encoding"[[:space:]]*:[[:space:]]*"[^"]*"' "$settings_file" | sed -E 's/.*"files.encoding"[[:space:]]*:[[:space:]]*"([^"]*)".*/\1/')
+    if [ "$encoding" != "" ] && [ "$encoding" != "null" ]; then
       echo "$default_lang.$encoding"
       return 0
     fi
