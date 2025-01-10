@@ -10,7 +10,7 @@ public:
     MOCK_METHOD(int, myFunction, ());
 };
 
-TEST(TestUsecase, any_times_with_return_sequential)
+TEST(TestUsecase1, any_times_with_return_sequential)
 {
     InSequence seq; // EXPECT_CALL が順に評価されることを宣言
     MockClass1 mock;

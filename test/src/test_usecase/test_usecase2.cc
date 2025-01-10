@@ -16,7 +16,7 @@ public:
     }
 };
 
-TEST(TestUsecase, use_default_action)
+TEST(TestUsecase2, use_default_action)
 {
     InSequence seq; // EXPECT_CALL が順に評価されることを宣言
     MockClass2 mock;
@@ -40,7 +40,7 @@ TEST(TestUsecase, use_default_action)
     EXPECT_EQ(567, mock.myFunction(5, 6)); // 5回目
 }
 
-TEST(TestUsecase, use_lambda_action)
+TEST(TestUsecase2, use_lambda_action)
 {
     MockClass2 mock;
 
@@ -60,7 +60,7 @@ static int myFunctionImpl(int a, int b)
     return a + b;
 }
 
-TEST(TestUsecase, use_exists_method)
+TEST(TestUsecase2, use_exists_method)
 {
     MockClass2 mock;
 

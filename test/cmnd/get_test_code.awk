@@ -15,8 +15,23 @@ BEGIN {
         print "Error: Invalid test_name format. Use ClassName.TestName" > "/dev/stderr";
         exit 1;
     }
+
+    # クラス名 (プレフィックスは取り除く)
     class_name = parts[1];
+    # "/" が含まれている場合、"/" までを削除
+    if (class_name ~ /\//) {
+        split(class_name, temp_parts, "/");
+        prefix = temp_parts[1];
+        class_name = temp_parts[length(temp_parts)];
+    }
+
+    # テストケース名 (パラメータテストの通番は取り除く)
     test_case_name = parts[2];
+    # "/" が含まれている場合、"/" からを削除
+    if (test_case_name ~ /\//) {
+        split(test_case_name, temp_parts, "/");
+        test_case_name = temp_parts[1];
+    }
 }
 
 # 複数行コメントの開始と終了が同じ行にある場合
@@ -77,6 +92,8 @@ in_multiline_comment {
     }
 }
 
+# TODO: prefix と class_name を使って、INSTANTIATE_TEST_SUITE_P のコードブロックを抽出する
+
 # TEST, TEST_F, TEST_P の形式にマッチするテストの開始地点を判定
 {
     # 動的な正規表現を構築
@@ -86,7 +103,7 @@ in_multiline_comment {
         extracting = 1;
         test_found = 1;
 
-        # コメントがある場合は出力
+        # コメントがバッファリングされている場合は出力
         if (buffer != "") {
             printf "%s", buffer;
         }
