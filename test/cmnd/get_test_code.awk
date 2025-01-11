@@ -1,6 +1,6 @@
 #!/usr/bin/awk -f
 
-# 使用方法: awk -v test_name="test_samplelogger.normal_call" -f get_test_code.awk test_file.cc
+# 使用方法: awk -v test_id="test_samplelogger.normal_call" -f get_test_code.awk test_file.cc
 
 BEGIN {
     extracting = 0;              # テストケースの抽出中フラグ
@@ -9,28 +9,27 @@ BEGIN {
     in_multiline_comment = 0;    # 複数行コメント中フラグ
     test_found = 0;              # テストケースを見つけたフラグ
 
-    # test_nameをクラス名とテスト名に分割
-    split(test_name, parts, "\\.");
+    # test_id を "." で分割
+    split(test_id, parts, "\\.");
     if (length(parts) != 2) {
-        print "Error: Invalid test_name format. Use ClassName.TestName" > "/dev/stderr";
+        print "Error: Invalid test_id format. Use test_suite_name.test_name" > "/dev/stderr";
         exit 1;
     }
 
-    # クラス名 (プレフィックスは取り除く)
-    class_name = parts[1];
+    test_suite_name = parts[1];
     # "/" が含まれている場合、"/" までを削除
-    if (class_name ~ /\//) {
-        split(class_name, temp_parts, "/");
+    if (test_suite_name ~ /\//) {
+        split(test_suite_name, temp_parts, "/");
         prefix = temp_parts[1];
-        class_name = temp_parts[length(temp_parts)];
+        test_suite_name = temp_parts[length(temp_parts)];
     }
 
     # テストケース名 (パラメータテストの通番は取り除く)
-    test_case_name = parts[2];
+    test_name = parts[2];
     # "/" が含まれている場合、"/" からを削除
-    if (test_case_name ~ /\//) {
-        split(test_case_name, temp_parts, "/");
-        test_case_name = temp_parts[1];
+    if (test_name ~ /\//) {
+        split(test_name, temp_parts, "/");
+        test_name = temp_parts[1];
     }
 }
 
@@ -92,16 +91,29 @@ in_multiline_comment {
     }
 }
 
-# TODO: prefix と class_name を使って、INSTANTIATE_TEST_SUITE_P のコードブロックを抽出する
-
-# TEST, TEST_F, TEST_P の形式にマッチするテストの開始地点を判定
+# TEST, TEST_F, TEST_P, INSTANTIATE_TEST_SUITE_P の形式にマッチするテストの開始地点を判定
 {
     # 動的な正規表現を構築
-    test_pattern = "^[[:space:]]*TEST(_[FP]*)?\\([[:space:]]*" class_name "[[:space:]]*,[[:space:]]*" test_case_name "[[:space:]]*\\)";
+    test_pattern = "^[[:space:]]*TEST(_[FP]*)?\\([[:space:]]*" test_suite_name "[[:space:]]*,[[:space:]]*" test_name "[[:space:]]*\\)";
+    test_pattern2 = "^[[:space:]]*INSTANTIATE_TEST_SUITE_P\\([[:space:]]*" prefix "[[:space:]]*,[[:space:]]*" test_suite_name "[[:space:]]*\\,";
 
-    if ($0 ~ test_pattern) {
-        extracting = 1;
-        test_found = 1;
+    if ($0 ~ test_pattern || $0 ~ test_pattern2) {
+        if ($0 ~ test_pattern)
+        {
+            extracting = 1;
+            brace_count = 0;  # 新しいブロックのためカウントをリセット
+        }
+        else if ($0 ~ test_pattern2)
+        {
+            extracting = 2;
+            brace_count = 1; # INSTANTIATE_TEST_SUITE_P に続く "("" をカウントアップしておく
+        }
+        test_found++;
+
+        if (test_found > 1)
+        {
+            printf "\n";
+        }
 
         # コメントがバッファリングされている場合は出力
         if (buffer != "") {
@@ -110,25 +122,34 @@ in_multiline_comment {
         buffer = "";  # バッファをクリア
 
         print $0;
-        brace_count = 0;  # 新しいブロックのためカウントをリセット
         next;
     }
 }
 
-# テストケースの中身を出力（TEST系ブロック内のみ）
+# テストケースの中身を出力
 extracting {
     print $0;
 
-    # { の数を増加
-    brace_count += gsub(/\{/, "{");
+    if (extracting == 1)
+    {
+        # { の数を増加
+        brace_count += gsub(/\{/, "{");
 
-    # } の数を減少
-    brace_count -= gsub(/\}/, "}");
+        # } の数を減少
+        brace_count -= gsub(/\}/, "}");
+    }
+    else if (extracting == 2)
+    {
+        # ( の数を増加
+        brace_count += gsub(/\(/, "(");
+
+        # ) の数を減少
+        brace_count -= gsub(/\)/, ")");
+    }
 
     # ブロック終了を検知
-    if (brace_count == 0) {
+    if (brace_count <= 0) {
         extracting = 0;
-        exit 0;  # スクリプト終了
     }
 }
 
@@ -137,10 +158,10 @@ extracting {
     next;
 }
 
-# ENDブロックでテストケースが見つからなかった場合の処理
+# END ブロックでテストが見つからなかった場合の処理
 END {
     if (!test_found) {
-        print "Error: Test case \"" test_name "\" not found." > "/dev/stderr";
+        print "Error: Test case \"" test_id "\" not found." > "/dev/stderr";
         exit 1;  # 異常終了
     }
 }

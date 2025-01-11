@@ -35,7 +35,7 @@ function run_test() {
     # cat *.cc | awk -v test_name=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk | source-highlight -s cpp -f esc;
     LANG=$FILES_LANG script -q -c "echo -e \"\nRunning test: $test_name$test_comment\"; \
         echo \"----\"; \
-        cat *.cc | awk -v test_name=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
+        cat *.cc | awk -v test_id=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
         echo \"----\"; \
         ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
         echo \$? > $temp_exit_code" $temp_file
@@ -96,7 +96,7 @@ function main() {
 
             LANG=$FILES_LANG script -q -c "echo -e \"\nRunning test: $test_name$test_comment\"; \
                 echo \"----\"; \
-                cat *.cc | awk -v test_name=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
+                cat *.cc | awk -v test_id=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
                 echo \"----\"; \
                 ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
                 echo \$? > $temp_exit_code" $temp_file > /dev/null
