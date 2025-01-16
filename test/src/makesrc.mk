@@ -30,7 +30,7 @@ LIBSDIR := \
 
 LIBSFILES := $(shell for dir in $(LIBSDIR); do find $$dir -maxdepth 1 -type f; done)
 
-TEST_LIBS := -lgtest -lgtest_main -lpthread -lgmock -lgcov
+TEST_LIBS := -lgtest_main -lgtest -lpthread -lgmock -lgcov
 ifneq ($(NO_GTEST_MAIN),)
 	ifeq ($(NO_GTEST_MAIN), 1)
 		TEST_LIBS := $(filter-out -lgtest_main, $(TEST_LIBS))
