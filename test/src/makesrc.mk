@@ -43,7 +43,13 @@ OBJDIR := obj
 GCOVDIR := gcov
 LCOVDIR := lcov
 
-CC := gcc
+# .c を gcc でコンパイルする場合、
+# あらかじめ CC に g++ を設定しておく。
+# そうでない場合は、gcc とする。
+ifneq ($(CC),g++)
+	CC := gcc
+endif
+
 CPP := g++
 LD := g++
 

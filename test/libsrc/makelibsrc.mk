@@ -25,7 +25,13 @@ INCDIR := \
 
 OBJDIR := obj
 
-CC := gcc
+# .c を gcc でコンパイルする場合、
+# あらかじめ CC に g++ を設定しておく。
+# そうでない場合は、gcc とする。
+ifneq ($(CC),g++)
+	CC := gcc
+endif
+
 CPP := g++
 
 # -g が含まれていない場合に追加
