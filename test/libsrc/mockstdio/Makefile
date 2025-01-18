@@ -1,5 +1,5 @@
-# ワークスペースのルートディレクトリ
-WORKSPACE_ROOT := $(shell \
+# ワークスペースのディレクトリ
+WORKSPACE_FOLDER := $(shell \
     dir=`pwd`; \
     while [ "$$dir" != "/" ]; do \
         if [ -f "$$dir/.workspaceRoot" ]; then \
@@ -11,4 +11,4 @@ WORKSPACE_ROOT := $(shell \
 )
 
 # libsrc の Makefile テンプレートをインクルード
-include $(WORKSPACE_ROOT)/test/libsrc/makelibsrc.mk
+include $(WORKSPACE_FOLDER)/test/libsrc/makelibsrc.mk

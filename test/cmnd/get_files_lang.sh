@@ -2,7 +2,7 @@
 #set -x
 
 # NOTE: settings.json に以下記載すれば環境変数を設定できるが、
-#       統合ターミナル外から make された場合を考慮して、自身で files.encoding の内容を得ることとしている。
+#       統合ターミナル外から make された場合を考慮して、自身で files.encoding の内容を得る。
 # 
 #     "terminal.integrated.env.linux": {
 #         "VSCODE_FILES_ENCODING": "${config:files.encoding}"
@@ -12,19 +12,17 @@
 #       setting.json 記載時に注意が必要。末尾にカンマがある等で失敗する。
 #       sed を使った実装をデフォルトにしているが、この場合、setting.json の改行位置に注意。
 
-# 引数チェック
-if [ "$#" -ne 1 ]; then
-  echo "Usage: $0 <workspace_directory>"
-  exit 1
-fi
+# このスクリプトのパス
+SCRIPT_DIR=$(dirname "$0")
 
-WORKSPACE_DIR=$1
+# ワークスペースのディレクトリ
+WORKSPACE_FOLDER=$SCRIPT_DIR/../../
 
 # LANG 環境変数の言語指定部分を取得 (デフォルトは "ja_JP")
 default_lang=$(echo "$LANG" | sed -E 's/\..*//' | grep -E '^[a-zA-Z]+(-[a-zA-Z]+)?$' || echo "ja_JP")
 
 # ワークスペースの .vscode/settings.json のパス
-VSCODE_SETTINGS="$WORKSPACE_DIR/.vscode/settings.json"
+VSCODE_SETTINGS="$WORKSPACE_FOLDER/.vscode/settings.json"
 
 # グローバル settings.json のパス
 GLOBAL_SETTINGS="$HOME/.config/Code/User/settings.json"

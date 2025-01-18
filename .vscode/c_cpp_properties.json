@@ -4,6 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
+                "/usr/local/include",
                 "${workspaceFolder}/test/include_override",
                 "${workspaceFolder}/prod/include",
                 "${workspaceFolder}/test/include"

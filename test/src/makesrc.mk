@@ -1,8 +1,8 @@
 # 副作用を防ぐため、はじめに include する
-include $(WORKSPACE_ROOT)/test/common_flags.mk
+include $(WORKSPACE_FOLDER)/test/common_flags.mk
 
 # ソースファイルのエンコード指定から LANG を得る
-FILES_LANG := $(shell sh $(WORKSPACE_ROOT)/test/cmnd/get_files_lang.sh $(WORKSPACE_ROOT))
+FILES_LANG := $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_files_lang.sh)
 
 # テストプログラムのディレクトリ名と実行体名
 # TARGETDIR := . の場合、カレントディレクトリに実行体を生成する
@@ -18,15 +18,12 @@ endif
 SRCS_C := $(wildcard *.c)
 SRCS_CPP := $(wildcard *.cc)
 
-INCDIR := \
-	/usr/local/include \
-	$(WORKSPACE_ROOT)/test/include_override \
-	$(WORKSPACE_ROOT)/test/include \
-	$(WORKSPACE_ROOT)/prod/include
+# c_cpp_properties.json から include ディレクトリを得る
+INCDIR := $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_include_paths.sh)
 
 LIBSDIR := \
 	/usr/local/lib64 \
-	$(WORKSPACE_ROOT)/test/lib
+	$(WORKSPACE_FOLDER)/test/lib
 
 LIBSFILES := $(shell for dir in $(LIBSDIR); do find $$dir -maxdepth 1 -type f; done)
 
@@ -37,7 +34,7 @@ ifneq ($(NO_GTEST_MAIN),)
 	endif
 endif
 
-TESTSH := $(WORKSPACE_ROOT)/test/cmnd/exec_test.sh
+TESTSH := $(WORKSPACE_FOLDER)/test/cmnd/exec_test.sh
 
 OBJDIR := obj
 GCOVDIR := gcov

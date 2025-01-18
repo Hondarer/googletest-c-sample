@@ -3,11 +3,11 @@
 # このスクリプトのパス
 SCRIPT_DIR=$(dirname "$0")
 
-# ワークスペースのルートディレクトリ
-WORKSPACE_ROOT=$SCRIPT_DIR/../../
+# ワークスペースのディレクトリ
+WORKSPACE_FOLDER=$SCRIPT_DIR/../../
 
 # ソースファイルのエンコード指定から LANG を得る
-FILES_LANG=$(sh $SCRIPT_DIR/get_files_lang.sh $WORKSPACE_ROOT)
+FILES_LANG=$(sh $SCRIPT_DIR/get_files_lang.sh $WORKSPACE_FOLDER)
 
 # テストバイナリのパス
 TEST_BINARY=$(basename `pwd`)

@@ -1,13 +1,13 @@
 # 副作用を防ぐため、はじめに include する
-include $(WORKSPACE_ROOT)/test/common_flags.mk
+include $(WORKSPACE_FOLDER)/test/common_flags.mk
 
 # ソースファイルのエンコード指定から LANG を得る
-FILES_LANG := $(shell sh $(WORKSPACE_ROOT)/test/cmnd/get_files_lang.sh $(WORKSPACE_ROOT))
+FILES_LANG := $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_files_lang.sh $(WORKSPACE_FOLDER))
 
 # アーカイブのディレクトリ名とアーカイブ名
 # TARGETDIR := . の場合、カレントディレクトリに実行体を生成する
 ifeq ($(TARGETDIR),)
-	TARGETDIR := $(WORKSPACE_ROOT)/test/lib
+	TARGETDIR := $(WORKSPACE_FOLDER)/test/lib
 endif
 # ディレクトリ名をアーカイブ名にする
 ifeq ($(TARGET),)
@@ -18,10 +18,8 @@ endif
 SRCS_C := $(wildcard *.c)
 SRCS_CPP := $(wildcard *.cc)
 
-INCDIR := \
-	/usr/local/include \
-	$(WORKSPACE_ROOT)/test/include \
-	$(WORKSPACE_ROOT)/prod/include
+# c_cpp_properties.json から include ディレクトリを得る
+INCDIR := $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_include_paths.sh)
 
 OBJDIR := obj
 

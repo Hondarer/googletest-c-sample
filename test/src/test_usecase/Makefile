@@ -1,5 +1,5 @@
-# ワークスペースのルートディレクトリ
-WORKSPACE_ROOT := $(shell \
+# ワークスペースのディレクトリ
+WORKSPACE_FOLDER := $(shell \
     dir=`pwd`; \
     while [ "$$dir" != "/" ]; do \
         if [ -f "$$dir/.workspaceRoot" ]; then \
@@ -20,4 +20,4 @@ TEST_TARGET_SRCS_CPP :=
 LIBS := -lmockstdio -lmocksample -ltestcom
 
 # src の Makefile テンプレートをインクルード
-include $(WORKSPACE_ROOT)/test/src/makesrc.mk
+include $(WORKSPACE_FOLDER)/test/src/makesrc.mk
