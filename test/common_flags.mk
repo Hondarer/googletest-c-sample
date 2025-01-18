@@ -34,8 +34,7 @@ CCOMFLAGS=\
 	-Wimplicit-fallthrough=0 \
 	-Wformat-overflow=0 \
 	-W \
-	-std=c99 \
-	-g
+	-std=c99
 
 CPPCOMFLAGS=\
 	-Wall \
@@ -66,5 +65,4 @@ CPPCOMFLAGS=\
 	-Wint-to-pointer-cast \
 	-Wimplicit-fallthrough=0 \
 	-Wformat-overflow=0 \
-	-W \
-	-g
+	-W
