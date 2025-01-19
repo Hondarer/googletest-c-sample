@@ -28,7 +28,7 @@ include_paths=$(awk -v workspace_root="$WORKSPACE_FOLDER" '
 ' "$c_cpp_properties")
 
 # 結果を絶対パスに変換して出力
-while IFS= read -r path; do
+echo "$include_paths" | while IFS= read -r path; do
     abs_path=$(readlink -f "$path")
     echo "$abs_path"
-done <<< "$include_paths"
+done

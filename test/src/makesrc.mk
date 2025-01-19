@@ -1,3 +1,5 @@
+SHELL := /bin/bash
+
 # 副作用を防ぐため、はじめに include する
 include $(WORKSPACE_FOLDER)/test/common_flags.mk
 
@@ -22,7 +24,6 @@ SRCS_CPP := $(wildcard *.cc)
 INCDIR := $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_include_paths.sh)
 
 LIBSDIR := \
-	/usr/local/lib64 \
 	$(WORKSPACE_FOLDER)/test/lib
 
 LIBSFILES := $(shell for dir in $(LIBSDIR); do find $$dir -maxdepth 1 -type f; done)
@@ -91,14 +92,14 @@ $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR)
 
 # テスト対象のソースファイルからシンボリックリンクを張る
 $(notdir $(TEST_TARGET_SRCS_C)):
-	ln -s $(shell echo $(TEST_TARGET_SRCS_C) | tr ' ' '\n' | awk '/$@/') $(notdir $@)
+	ln -s $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_C) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
 #	.gitignore に対象ファイルを追加
 	echo $(notdir $@) >> .gitignore
 	@tempfile=$$(mktemp) && \
 	sort .gitignore | uniq > $$tempfile && \
 	mv $$tempfile .gitignore
 $(notdir $(TEST_TARGET_SRCS_CPP)):
-	ln -s $(shell echo $(TEST_TARGET_SRCS_CPP) | tr ' ' '\n' | awk '/$@/') $(notdir $@)
+	ln -s $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPPs) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
 #	.gitignore に対象ファイルを追加
 	echo $(notdir $@) >> .gitignore
 	@tempfile=$$(mktemp) && \
@@ -202,4 +203,4 @@ endif
 
 .PHONY: test
 test: $(TESTSH) $(TARGETDIR)/$(TARGET)
-	@sh $(TESTSH) 2>&1 | nkf
+	$(SHELL) $(TESTSH) 2>&1 | nkf

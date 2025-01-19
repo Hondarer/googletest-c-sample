@@ -1,3 +1,5 @@
+SHELL := /bin/bash
+
 # 副作用を防ぐため、はじめに include する
 include $(WORKSPACE_FOLDER)/test/common_flags.mk
 

@@ -2,11 +2,11 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "make (/test)",
+            "label": "make",
             "type": "shell",
             "command": "make",
             "options": {
-                "cwd": "${workspaceFolder}/test"
+                "cwd": "${workspaceFolder}"
             },
             "group": {
                 "kind": "build",
@@ -21,14 +21,14 @@
             ]
         },
         {
-            "label": "make all (/test)",
+            "label": "make all",
             "type": "shell",
             "command": "make",
             "args": [
                 "all"
             ],
             "options": {
-                "cwd": "${workspaceFolder}/test"
+                "cwd": "${workspaceFolder}"
             },
             "group": {
                 "kind": "build",
@@ -43,14 +43,14 @@
             ]
         },
         {
-            "label": "make test (/test)",
+            "label": "make test",
             "type": "shell",
             "command": "make",
             "args": [
                 "test"
             ],
             "options": {
-                "cwd": "${workspaceFolder}/test"
+                "cwd": "${workspaceFolder}"
             },
             "group": {
                 "kind": "test",
@@ -65,7 +65,7 @@
             ]
         },
         {
-            "label": "make all test (/test)",
+            "label": "make all test",
             "type": "shell",
             "command": "make",
             "args": [
@@ -73,7 +73,7 @@
                 "test"
             ],
             "options": {
-                "cwd": "${workspaceFolder}/test"
+                "cwd": "${workspaceFolder}"
             },
             "group": {
                 "kind": "test",

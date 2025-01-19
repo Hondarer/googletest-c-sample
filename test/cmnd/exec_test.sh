@@ -33,7 +33,7 @@ function run_test() {
 
     # テストコードに着色する場合:
     # cat *.cc | awk -v test_name=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk | source-highlight -s cpp -f esc;
-    LANG=$FILES_LANG script -q -c "echo -e \"\nRunning test: $test_name$test_comment\"; \
+    LANG=$FILES_LANG script -q -c "echo \"\"; echo \"Running test: $test_name$test_comment\"; \
         echo \"----\"; \
         cat *.cc | awk -v test_id=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
         echo \"----\"; \
@@ -94,7 +94,7 @@ function main() {
             fi
             local test_name=$(echo "$test_name_w_comment" | cut -d' ' -f1)
 
-            LANG=$FILES_LANG script -q -c "echo -e \"\nRunning test: $test_name$test_comment\"; \
+            LANG=$FILES_LANG script -q -c "echo \"\"; echo \"Running test: $test_name$test_comment\"; \
                 echo \"----\"; \
                 cat *.cc | awk -v test_id=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
                 echo \"----\"; \
@@ -140,11 +140,11 @@ function main() {
 
     if [ $FAILURE_COUNT -eq 0 ]; then
         echo -e "\e[32m"
-            sh $SCRIPT_DIR/banner.sh PASSED
+            bash $SCRIPT_DIR/banner.sh PASSED
         echo -e "\e[0m"
     else
         echo -e "\e[31m"
-            sh $SCRIPT_DIR/banner.sh FAILED
+            bash $SCRIPT_DIR/banner.sh FAILED
         echo -e "\e[0m"
         return 1
     fi
