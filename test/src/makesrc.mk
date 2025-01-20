@@ -203,4 +203,6 @@ endif
 
 .PHONY: test
 test: $(TESTSH) $(TARGETDIR)/$(TARGET)
-	$(SHELL) $(TESTSH) 2>&1 | nkf
+	@status=0; \
+	$(SHELL) $(TESTSH) > >(nkf) 2> >(nkf >&2) || status=$$?; \
+	exit $$status

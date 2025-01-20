@@ -12,6 +12,12 @@ FILES_LANG=$(sh $SCRIPT_DIR/get_files_lang.sh $WORKSPACE_FOLDER)
 # テストバイナリのパス
 TEST_BINARY=$(basename `pwd`)
 
+# スタックサイズ制限緩和
+# (1) ハードリミットのスタックサイズを取得
+hard_limit=$(ulimit -H -s)
+# (2) ハードリミットのスタックサイズをソフトリミットに設定
+ulimit -s "$hard_limit"
+
 # テスト一覧を取得
 function list_tests() {
     ./$TEST_BINARY --gtest_list_tests | awk '
@@ -154,3 +160,4 @@ function main() {
 
 # 実行
 main
+exit $?

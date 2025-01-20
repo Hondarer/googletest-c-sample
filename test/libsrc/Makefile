@@ -11,4 +11,9 @@ test : $(SUBDIRS)
 
 .PHONY: $(SUBDIRS)
 $(SUBDIRS) : 
-	make -C $@ $(MAKECMDGOALS)
+	@if [ -f $@/Makefile ]; then \
+		echo make -C $@ $(MAKECMDGOALS); \
+		make -C $@ $(MAKECMDGOALS); \
+	else \
+		echo "Skipping directory '$@' (no Makefile)"; \
+	fi
