@@ -9,6 +9,8 @@
 - モックライブラリのヘッダ [(サンプルファイル)](test/include/mock_sample.h) に、メソッド定義 (コンパイル時に google mock によって関数定義に変換される) を追加。
 - 必要に応じ、呼び出し時の stdio 出力などをテストモジュールから制御するための変数定義を追加。
 
+以下の `mock_samplelogger_enable_trace` は、 `WillByDefault` や `ON_CALL` に同様の記述を行うことでも実現可能なため、 google mock で C 言語のソースをテストするにあたっての必須条件ではない。 モックをインスタンス化せずともテスト結果として戻り値を確認することができるようになるため、本レポジトリでは必要性によらずパターンとして定義している。
+
 ```cpp
 extern int mock_samplelogger_enable_trace;
 MOCK_METHOD(int, samplelogger, (int, const char *));
