@@ -8,7 +8,7 @@
             "program": "/bin/bash",
             "args": [
                 "-c",
-                "./$(basename `pwd`)"
+                "ulimit -s `ulimit -H -s` && ./$(basename `pwd`)"
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
