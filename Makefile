@@ -1,3 +1,8 @@
+# ターゲットなしの make 対応
+.PHONY: TARGET_FOR_NO_ARGS
+TARGET_FOR_NO_ARGS :
+	make -C test
+
 .PHONY: all
 all :
 	make -C test all
