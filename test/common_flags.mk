@@ -33,6 +33,7 @@ CCOMFLAGS=\
 	-Wpointer-to-int-cast \
 	-Wimplicit-fallthrough=0 \
 	-Wformat-overflow=0 \
+	-Wunknown-pragmas \
 	-W \
 	-std=c99
 
@@ -65,4 +66,5 @@ CPPCOMFLAGS=\
 	-Wint-to-pointer-cast \
 	-Wimplicit-fallthrough=0 \
 	-Wformat-overflow=0 \
+	-Wunknown-pragmas \
 	-W
