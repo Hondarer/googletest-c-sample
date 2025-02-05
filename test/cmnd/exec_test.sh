@@ -43,6 +43,7 @@ function run_test() {
         echo \"----\"; \
         cat *.cc | awk -v test_id=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
         echo \"----\"; \
+        echo ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
         ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
         echo \$? > $temp_exit_code" $temp_file
 
@@ -104,6 +105,7 @@ function main() {
                 echo \"----\"; \
                 cat *.cc | awk -v test_id=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
                 echo \"----\"; \
+                echo ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
                 ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
                 echo \$? > $temp_exit_code" $temp_file > /dev/null
 
