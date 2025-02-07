@@ -20,7 +20,7 @@ extern "C"
 }
 #endif
 
-#ifndef GOOGLEMOCK_INCLUDE_GMOCK_GMOCK_H_
+#ifdef _IN_OVERRIDE_HEADER_
 
 #define access(path, amode) mock_access(path, amode)
 #define fclose(stream) mock_fclose(stream)
@@ -29,7 +29,7 @@ extern "C"
 #define fprintf(stream, format, ...) mock_fprintf(stream, format, ##__VA_ARGS__)
 #define stat(path, buf) mock_stat(path, buf)
 
-#else // GOOGLEMOCK_INCLUDE_GMOCK_GMOCK_H_
+#else // _IN_OVERRIDE_HEADER_
 
 #include <gmock/gmock.h>
 
@@ -63,6 +63,6 @@ public:
 
 extern Mock_stdio *_mock_stdio;
 
-#endif // GOOGLEMOCK_INCLUDE_GMOCK_GMOCK_H_
+#endif // _IN_OVERRIDE_HEADER_
 
 #endif // _MOCK_STDIO_H_

@@ -73,8 +73,8 @@ $(TARGETDIR)/$(TARGET): $(OBJS) $(LIBSFILES) | $(TARGETDIR)
 # C ソースファイルのコンパイル
 $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR)
 	@set -o pipefail; if echo $(TEST_TARGET_SRCS_C) | grep -q $(notdir $<); then \
-		echo LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS) -coverage -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
-		LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS) -coverage -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
+		echo LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) -I $(WORKSPACE_FOLDER)/test/include_override $(CFLAGS) -coverage -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
+		LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) -I $(WORKSPACE_FOLDER)/test/include_override $(CFLAGS) -coverage -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 	else \
 		echo LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 		LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
@@ -83,8 +83,8 @@ $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR)
 # C++ ソースファイルのコンパイル
 $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR)
 	@set -o pipefail; if echo $(TEST_TARGET_SRCS_CPP) | grep -q $(notdir $<); then \
-		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -coverage -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
-		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -coverage -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
+		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) -I $(WORKSPACE_FOLDER)/test/include_override $(CPPFLAGS) -coverage -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
+		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) -I $(WORKSPACE_FOLDER)/test/include_override $(CPPFLAGS) -coverage -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 	else \
 		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
