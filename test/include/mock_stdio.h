@@ -33,7 +33,6 @@ extern int mock_fflush_enable_trace;
 extern int mock_fopen_enable_trace;
 extern int mock_fprintf_enable_trace;
 
-extern int delegate_real_access(const char *, int);
 extern int delegate_real_fclose(FILE *);
 extern int delegate_real_fflush(FILE *);
 extern FILE *delegate_real_fopen(const char *, const char *);
