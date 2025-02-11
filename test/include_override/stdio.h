@@ -9,8 +9,8 @@
 #pragma GCC diagnostic pop
 
 /* モックにすげ替え */
-#define _IN_OVERRIDE_HEADER_
+#define _IN_OVERRIDE_HEADER_STDIO_H_
 #include <mock_stdio.h>
-#undef _IN_OVERRIDE_HEADER_
+#undef _IN_OVERRIDE_HEADER_STDIO_H_
 
 #endif // _STDIO_H

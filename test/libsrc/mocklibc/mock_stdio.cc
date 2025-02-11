@@ -8,9 +8,6 @@ Mock_stdio *_mock_stdio = nullptr;
 
 Mock_stdio::Mock_stdio()
 {
-    ON_CALL(*this, access(_, _))
-        .WillByDefault(Invoke(delegate_real_access));
-
     ON_CALL(*this, fclose(_))
         .WillByDefault(Invoke(delegate_real_fclose));
 
@@ -22,9 +19,6 @@ Mock_stdio::Mock_stdio()
 
     ON_CALL(*this, fprintf(_, _))
         .WillByDefault(Invoke(delegate_real_fprintf));
-
-    ON_CALL(*this, stat(_, _))
-        .WillByDefault(Invoke(delegate_real_stat));
 
     _mock_stdio = this;
 }

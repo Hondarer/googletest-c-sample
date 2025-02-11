@@ -38,7 +38,18 @@ int mock_fprintf(FILE *stream, const char *fmt, ...)
 
     if (mock_fprintf_enable_trace != 0)
     {
-        printf("  > fprintf %d, %s -> %d\n", stream->_fileno, str, rtc);
+        size_t len = strlen(str);
+        char *trimmed_str = (char *)malloc(len + 1);
+        memcpy(trimmed_str, str, len + 1);
+        if (trimmed_str != NULL)
+        {
+            if (len > 0 && trimmed_str[len - 1] == '\n')
+            {
+                trimmed_str[len - 1] = '\0';
+            }
+            printf("  > fprintf %d, %s -> %d\n", stream->_fileno, trimmed_str, rtc);
+            free(trimmed_str);
+        }
     }
 
     free(str);
