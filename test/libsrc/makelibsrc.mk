@@ -18,7 +18,7 @@ endif
 
 # コンパイル対象のソースファイル (カレントディレクトリから自動収集)
 SRCS_C := $(wildcard *.c)
-SRCS_CPP := $(wildcard *.cc)
+SRCS_CPP := $(wildcard *.cc) $(wildcard *.cpp)
 
 # c_cpp_properties.json から include ディレクトリを得る
 INCDIR := $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_include_paths.sh)
@@ -45,8 +45,8 @@ endif
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
 CFLAGS := $(addprefix -I, $(INCDIR)) $(CCOMFLAGS)
 CPPFLAGS := $(addprefix -I, $(INCDIR)) $(CPPCOMFLAGS)
-OBJS := $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(SRCS_CPP:.cc=.o)))
-DEPS := $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(SRCS_CPP:.cc=.d)))
+OBJS := $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(SRCS_CPP)))))
+DEPS := $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(patsubst %.cc, %.d, $(patsubst %.cpp, %.d, $(SRCS_CPP)))))
 
 # アーカイブの生成
 $(TARGETDIR)/$(TARGET): $(OBJS) | $(TARGETDIR)
@@ -56,8 +56,12 @@ $(TARGETDIR)/$(TARGET): $(OBJS) | $(TARGETDIR)
 $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR) $(TARGETDIR)
 	set -o pipefail; LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf
 
-# C++ ソースファイルのコンパイル
+# C++ ソースファイルのコンパイル (.cc)
 $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR) $(TARGETDIR)
+	set -o pipefail; LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf
+
+# C++ ソースファイルのコンパイル (.cpp)
+$(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d | $(OBJDIR) $(TARGETDIR)
 	set -o pipefail; LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf
 
 # The empty rule is required to handle the case where the dependency file is deleted.

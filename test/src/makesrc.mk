@@ -18,7 +18,7 @@ endif
 
 # コンパイル対象のソースファイル (カレントディレクトリから自動収集)
 SRCS_C := $(wildcard *.c)
-SRCS_CPP := $(wildcard *.cc)
+SRCS_CPP := $(wildcard *.cc) $(wildcard *.cpp)
 
 # c_cpp_properties.json から include ディレクトリを得る
 INCDIR := $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_include_paths.sh)
@@ -63,8 +63,8 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
 CFLAGS := $(addprefix -I, $(INCDIR)) $(CCOMFLAGS)
 CPPFLAGS := $(addprefix -I, $(INCDIR)) $(CPPCOMFLAGS)
 LDFLAGS := $(addprefix -L, $(LIBSDIR))
-OBJS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(SRCS_CPP:.cc=.o) $(TEST_TARGET_SRCS_C:.c=.o) $(TEST_TARGET_SRCS_CPP:.cc=.o))))
-DEPS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(SRCS_CPP:.cc=.d) $(TEST_TARGET_SRCS_C:.c=.d) $(TEST_TARGET_SRCS_CPP:.cc=.d))))
+OBJS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(SRCS_CPP))) $(TEST_TARGET_SRCS_C:.c=.o) $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(TEST_TARGET_SRCS_CPP))))))
+DEPS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(patsubst %.cc, %.d, $(patsubst %.cpp, %.d, $(SRCS_CPP))) $(TEST_TARGET_SRCS_C:.c=.d) $(patsubst %.cc, %.d, $(patsubst %.cpp, %.d, $(TEST_TARGET_SRCS_CPP))))))
 
 # 実行体の生成
 $(TARGETDIR)/$(TARGET): $(OBJS) $(LIBSFILES) | $(TARGETDIR)
@@ -80,8 +80,18 @@ $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR)
 		LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 	fi
 
-# C++ ソースファイルのコンパイル
+# C++ ソースファイルのコンパイル (*.cc)
 $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR)
+	@set -o pipefail; if echo $(TEST_TARGET_SRCS_CPP) | grep -q $(notdir $<); then \
+		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) -I$(WORKSPACE_FOLDER)/test/include_override $(CPPFLAGS) -coverage -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
+		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) -I$(WORKSPACE_FOLDER)/test/include_override $(CPPFLAGS) -coverage -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
+	else \
+		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
+		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
+	fi
+
+# C++ ソースファイルのコンパイル (*.cpp)
+$(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d | $(OBJDIR)
 	@set -o pipefail; if echo $(TEST_TARGET_SRCS_CPP) | grep -q $(notdir $<); then \
 		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) -I$(WORKSPACE_FOLDER)/test/include_override $(CPPFLAGS) -coverage -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) -I$(WORKSPACE_FOLDER)/test/include_override $(CPPFLAGS) -coverage -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
