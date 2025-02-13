@@ -38,10 +38,10 @@ function run_test() {
     local temp_exit_code=$(mktemp)
 
     # テストコードに着色する場合:
-    # cat *.cc *.cpp | awk -v test_name=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk | source-highlight -s cpp -f esc;
+    # cat *.cc *.cpp 2>/dev/null | awk -v test_name=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk | source-highlight -s cpp -f esc;
     LANG=$FILES_LANG script -q -c "echo \"\"; echo \"Running test: $test_name$test_comment\"; \
         echo \"----\"; \
-        cat *.cc *.cpp | awk -v test_id=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
+        cat *.cc *.cpp 2>/dev/null | awk -v test_id=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
         echo \"----\"; \
         echo ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
         ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
@@ -103,7 +103,7 @@ function main() {
 
             LANG=$FILES_LANG script -q -c "echo \"\"; echo \"Running test: $test_name$test_comment\"; \
                 echo \"----\"; \
-                cat *.cc *.cpp | awk -v test_id=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
+                cat *.cc *.cpp 2>/dev/null | awk -v test_id=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
                 echo \"----\"; \
                 echo ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
                 ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
