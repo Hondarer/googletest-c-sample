@@ -45,8 +45,8 @@ endif
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
 CFLAGS := $(addprefix -I, $(INCDIR)) $(CCOMFLAGS)
 CPPFLAGS := $(addprefix -I, $(INCDIR)) $(CPPCOMFLAGS)
-OBJS := $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(SRCS_CPP)))))
-DEPS := $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(patsubst %.cc, %.d, $(patsubst %.cpp, %.d, $(SRCS_CPP)))))
+OBJS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(SRCS_CPP))) $(LINK_SRCS_C:.c=.o) $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(LINK_SRCS_CPP))))))
+DEPS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(patsubst %.cc, %.d, $(patsubst %.cpp, %.d, $(SRCS_CPP))) $(LINK_SRCS_C:.c=.d) $(patsubst %.cc, %.d, $(patsubst %.cpp, %.d, $(LINK_SRCS_CPP))))))
 
 # アーカイブの生成
 $(TARGETDIR)/$(TARGET): $(OBJS) | $(TARGETDIR)
@@ -63,6 +63,22 @@ $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR) $(TARGETDIR)
 # C++ ソースファイルのコンパイル (*.cpp)
 $(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d | $(OBJDIR) $(TARGETDIR)
 	set -o pipefail; LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf
+
+# シンボリックリンク対象のソースファイルからシンボリックリンクを張る
+$(notdir $(LINK_SRCS_C)):
+	ln -s $(shell realpath --relative-to=. $(shell echo $(LINK_SRCS_C) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
+#	.gitignore に対象ファイルを追加
+	echo $(notdir $@) >> .gitignore
+	@tempfile=$$(mktemp) && \
+	sort .gitignore | uniq > $$tempfile && \
+	mv $$tempfile .gitignore
+$(notdir $(LINK_SRCS_CPP)):
+	ln -s $(shell realpath --relative-to=. $(shell echo $(LINK_SRCS_CPP) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
+#	.gitignore に対象ファイルを追加
+	echo $(notdir $@) >> .gitignore
+	@tempfile=$$(mktemp) && \
+	sort .gitignore | uniq > $$tempfile && \
+	mv $$tempfile .gitignore
 
 # The empty rule is required to handle the case where the dependency file is deleted.
 $(DEPS):
@@ -87,6 +103,19 @@ clean:
 		done; \
 		ar tv $(TARGETDIR)/$(TARGET); \
     fi
+#   シンボリックリンク対象から張ったシンボリックリンクを削除する
+	-@if [ -n "$(wildcard $(notdir $(LINK_SRCS_C)))" ] || [ -n "$(wildcard $(notdir $(LINK_SRCS_CPP)))" ]; then \
+		echo rm -f $(notdir $(LINK_SRCS_C)) $(notdir $(LINK_SRCS_CPP)); \
+		rm -f $(notdir $(LINK_SRCS_C)) $(notdir $(LINK_SRCS_CPP)); \
+	fi
+# .gitignore の再生成 (コミット差分が出ないように)
+	-rm -f .gitignore
+	@for ignorefile in $(notdir $(LINK_SRCS_C)) $(notdir $(LINK_SRCS_CPP)); \
+		do echo $$ignorefile >> .gitignore; \
+		tempfile=$$(mktemp) && \
+		sort .gitignore | uniq > $$tempfile && \
+		mv $$tempfile .gitignore; \
+	done
 	-rm -rf $(OBJDIR)
 
 .PHONY: test
