@@ -56,11 +56,11 @@ $(TARGETDIR)/$(TARGET): $(OBJS) | $(TARGETDIR)
 $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR) $(TARGETDIR)
 	set -o pipefail; LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf
 
-# C++ ソースファイルのコンパイル (.cc)
+# C++ ソースファイルのコンパイル (*.cc)
 $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR) $(TARGETDIR)
 	set -o pipefail; LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf
 
-# C++ ソースファイルのコンパイル (.cpp)
+# C++ ソースファイルのコンパイル (*.cpp)
 $(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d | $(OBJDIR) $(TARGETDIR)
 	set -o pipefail; LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf
 

@@ -66,9 +66,14 @@ LDFLAGS := $(addprefix -L, $(LIBSDIR))
 OBJS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(SRCS_CPP))) $(TEST_TARGET_SRCS_C:.c=.o) $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(TEST_TARGET_SRCS_CPP))))))
 DEPS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(patsubst %.cc, %.d, $(patsubst %.cpp, %.d, $(SRCS_CPP))) $(TEST_TARGET_SRCS_C:.c=.d) $(patsubst %.cc, %.d, $(patsubst %.cpp, %.d, $(TEST_TARGET_SRCS_CPP))))))
 
+ifndef NO_LINK
 # 実行体の生成
 $(TARGETDIR)/$(TARGET): $(OBJS) $(LIBSFILES) | $(TARGETDIR)
 	set -o pipefail; LANG=$(FILES_LANG) $(LD) $(LDFLAGS) -o $@ $(OBJS) $(LIBS) $(TEST_LIBS) -fdiagnostics-color=always 2>&1 | nkf
+else
+# リンクのみ
+$(OBJS): $(LIBSFILES)
+endif
 
 # C ソースファイルのコンパイル
 $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR)
@@ -109,7 +114,7 @@ $(notdir $(TEST_TARGET_SRCS_C)):
 	sort .gitignore | uniq > $$tempfile && \
 	mv $$tempfile .gitignore
 $(notdir $(TEST_TARGET_SRCS_CPP)):
-	ln -s $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPPs) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
+	ln -s $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPP) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
 #	.gitignore に対象ファイルを追加
 	echo $(notdir $@) >> .gitignore
 	@tempfile=$$(mktemp) && \
@@ -134,7 +139,13 @@ $(LCOVDIR):
 	mkdir -p $@
 
 .PHONY: all
+ifndef NO_LINK
+# clean & 実行体の生成
 all: clean $(TARGETDIR)/$(TARGET)
+else
+# clean & リンクのみ
+all: clean $(OBJS) $(LIBSFILES)
+endif
 
 .PHONY: clean
 clean: clean-cov
@@ -212,7 +223,13 @@ take-lcov: $(LCOVDIR)
 endif
 
 .PHONY: test
+ifndef NO_LINK
+# テストの実行
 test: $(TESTSH) $(TARGETDIR)/$(TARGET)
 	@status=0; \
 	$(SHELL) $(TESTSH) > >(nkf) 2> >(nkf >&2) || status=$$?; \
 	exit $$status
+else
+# 何もしない
+test: ;
+endif
