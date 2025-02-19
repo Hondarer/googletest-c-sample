@@ -45,8 +45,8 @@ endif
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
 CFLAGS := $(addprefix -I, $(INCDIR)) $(CCOMFLAGS)
 CPPFLAGS := $(addprefix -I, $(INCDIR)) $(CPPCOMFLAGS)
-OBJS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(SRCS_CPP))) $(LINK_SRCS_C:.c=.o) $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(LINK_SRCS_CPP))))))
-DEPS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(patsubst %.cc, %.d, $(patsubst %.cpp, %.d, $(SRCS_CPP))) $(LINK_SRCS_C:.c=.d) $(patsubst %.cc, %.d, $(patsubst %.cpp, %.d, $(LINK_SRCS_CPP))))))
+OBJS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(LINK_SRCS_C:.c=.o) $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(SRCS_CPP) $(LINK_SRCS_CPP))))))
+DEPS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(LINK_SRCS_C:.c=.d) $(patsubst %.cc, %.d, $(patsubst %.cpp, %.d, $(SRCS_CPP) $(LINK_SRCS_CPP))))))
 
 # アーカイブの生成
 $(TARGETDIR)/$(TARGET): $(OBJS) | $(TARGETDIR)

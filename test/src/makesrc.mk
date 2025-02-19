@@ -63,8 +63,8 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
 CFLAGS := $(addprefix -I, $(INCDIR)) $(CCOMFLAGS)
 CPPFLAGS := $(addprefix -I, $(INCDIR)) $(CPPCOMFLAGS)
 LDFLAGS := $(addprefix -L, $(LIBSDIR))
-OBJS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(SRCS_CPP))) $(TEST_TARGET_SRCS_C:.c=.o) $(LINK_SRCS_C:.c=.o) $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(TEST_TARGET_SRCS_CPP) $(LINK_SRCS_CPP))))))
-DEPS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(patsubst %.cc, %.d, $(patsubst %.cpp, %.d, $(SRCS_CPP))) $(TEST_TARGET_SRCS_C:.c=.d) $(LINK_SRCS_C:.c=.d) $(patsubst %.cc, %.d, $(patsubst %.cpp, %.d, $(TEST_TARGET_SRCS_CPP) $(LINK_SRCS_CPP))))))
+OBJS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(TEST_TARGET_SRCS_C:.c=.o) $(LINK_SRCS_C:.c=.o) $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(SRCS_CPP) $(TEST_TARGET_SRCS_CPP) $(LINK_SRCS_CPP))))))
+DEPS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(TEST_TARGET_SRCS_C:.c=.d) $(LINK_SRCS_C:.c=.d) $(patsubst %.cc, %.d, $(patsubst %.cpp, %.d, $(SRCS_CPP) $(TEST_TARGET_SRCS_CPP) $(LINK_SRCS_CPP))))))
 
 ifndef NO_LINK
 # 実行体の生成
