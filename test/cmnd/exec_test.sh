@@ -129,7 +129,7 @@ function main() {
         done
     unset IFS
 
-    echo -e "----\nTotal tests\t$(echo "$tests" | wc -l)\nPassed\t$SUCCESS_COUNT\nWarning\t$WARNING_COUNT\nFailed\t$FAILURE_COUNT" >> results/all_tests/summary.log
+    echo -e "----\nTotal tests\t$(echo "$tests" | wc -l)\nPassed\t\t$SUCCESS_COUNT\nWarning(s)\t$WARNING_COUNT\nFailed\t\t$FAILURE_COUNT" >> results/all_tests/summary.log
     make take-cov > /dev/null
 
     if ls gcov/*.gcov 1> /dev/null 2>&1; then
