@@ -87,6 +87,7 @@ function main() {
     # すべてのテストを通しで実行後、全体カバレッジを取得
     # プロセスの依存性排除のため、一括ではなく個別にテストを実施
     SUCCESS_COUNT=0
+    WARNING_COUNT=0
     FAILURE_COUNT=0
     make clean-cov > /dev/null
     mkdir -p results/all_tests
@@ -112,8 +113,13 @@ function main() {
             local result=$(cat $temp_exit_code)
             rm -f $temp_exit_code
             if [ $result -eq 0 ]; then
-                echo -e "$test_name\tPASSED" >> results/all_tests/summary.log
-                SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+                if grep -q "WARNING" $temp_file; then
+                    echo -e "$test_name\tWARNING" >> results/all_tests/summary.log
+                    WARNING_COUNT=$((WARNING_COUNT + 1))
+                else
+                    echo -e "$test_name\tPASSED" >> results/all_tests/summary.log
+                    SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+                fi
             else
                 echo -e "$test_name\tFAILED" >> results/all_tests/summary.log
                 FAILURE_COUNT=$((FAILURE_COUNT + 1))
@@ -123,7 +129,7 @@ function main() {
         done
     unset IFS
 
-    echo -e "----\nTotal tests\t$(echo "$tests" | wc -l)\nPassed\t$SUCCESS_COUNT\nFailed\t$FAILURE_COUNT" >> results/all_tests/summary.log
+    echo -e "----\nTotal tests\t$(echo "$tests" | wc -l)\nPassed\t$SUCCESS_COUNT\nWarning\t$WARNING_COUNT\nFailed\t$FAILURE_COUNT" >> results/all_tests/summary.log
     make take-cov > /dev/null
 
     if ls gcov/*.gcov 1> /dev/null 2>&1; then
@@ -147,9 +153,16 @@ function main() {
     cat results/all_tests/summary.log
 
     if [ $FAILURE_COUNT -eq 0 ]; then
-        echo -e "\e[32m"
-            bash $SCRIPT_DIR/banner.sh PASSED
-        echo -e "\e[0m"
+        if [ $WARNING_COUNT -eq 0 ]; then
+            echo -e "\e[32m"
+                bash $SCRIPT_DIR/banner.sh PASSED
+            echo -e "\e[0m"
+        else
+            echo -e "\e[33m"
+                bash $SCRIPT_DIR/banner.sh WARNING
+            echo -e "\e[0m"
+            #return 1
+        fi
     else
         echo -e "\e[31m"
             bash $SCRIPT_DIR/banner.sh FAILED
