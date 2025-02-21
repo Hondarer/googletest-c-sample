@@ -22,7 +22,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "make",
+            "preLaunchTask": "make (current dir)",
             "miDebuggerPath": "/usr/bin/gdb",
             "logging": {
                 "engineLogging": true
