@@ -43,8 +43,8 @@ ifeq ($(findstring -g,$(CPPCOMFLAGS)),)
 endif
 
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
-CFLAGS := $(addprefix -I, $(INCDIR)) $(CCOMFLAGS)
-CPPFLAGS := $(addprefix -I, $(INCDIR)) $(CPPCOMFLAGS)
+CFLAGS := $(CCOMFLAGS) $(addprefix -I, $(INCDIR))
+CPPFLAGS := $(CPPCOMFLAGS) $(addprefix -I, $(INCDIR))
 OBJS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(LINK_SRCS_C:.c=.o) $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(SRCS_CPP) $(LINK_SRCS_CPP))))))
 DEPS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(LINK_SRCS_C:.c=.d) $(patsubst %.cc, %.d, $(patsubst %.cpp, %.d, $(SRCS_CPP) $(LINK_SRCS_CPP))))))
 

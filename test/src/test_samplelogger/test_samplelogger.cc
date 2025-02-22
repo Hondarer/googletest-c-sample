@@ -57,7 +57,6 @@ TEST_F(test_samplelogger, fclose_failed_completely_expect_call)
     Mock の各メソッドは必ず検証するか、NiceMock を使用すること。
     NiceMock<Mock_stdio> でない場合、以下の警告が出力される。
 
-    GMOCK WARNING:
     Uninteresting mock function call - taking default action specified at:
     mock_stdio.cc:20:
         Function call: fopen(0x47ef52 pointing to "/tmp/sample.log", 0x47ef50 pointing to "a")
@@ -65,7 +64,6 @@ TEST_F(test_samplelogger, fclose_failed_completely_expect_call)
     NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
     > fopen /tmp/sample.log, a -> 3
 
-    GMOCK WARNING:
     Uninteresting mock function call - taking default action specified at:
     mock_stdio.cc:23:
         Function call: fprintf(0x3043dea0, 0x3043da80 pointing to "[2] ")
@@ -104,7 +102,6 @@ TEST_F(test_samplelogger, fclose_failed_with_nicemock)
     Mock の各メソッドは必ず検証するか、NiceMock を使用すること。
     NiceMock<Mock_stdio> でない場合、以下の警告が出力される。
 
-    GMOCK WARNING:
     Uninteresting mock function call - taking default action specified at:
     mock_stdio.cc:20:
         Function call: fopen(0x47ef52 pointing to "/tmp/sample.log", 0x47ef50 pointing to "a")
@@ -112,7 +109,6 @@ TEST_F(test_samplelogger, fclose_failed_with_nicemock)
     NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
     > fopen /tmp/sample.log, a -> 3
 
-    GMOCK WARNING:
     Uninteresting mock function call - taking default action specified at:
     mock_stdio.cc:23:
         Function call: fprintf(0x3043dea0, 0x3043da80 pointing to "[2] ")

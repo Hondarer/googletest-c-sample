@@ -28,18 +28,32 @@ function list_tests() {
 # テストを実行 (個別カバレッジあり)
 function run_test() {
     local test_comment=""
+    local test_comment_delim=""
     if [[ "$1" == *#* ]]; then
-        test_comment=" #${1#*#}"
+        test_comment_delim=" "
+        test_comment="#${1#*#}"
     fi
     local test_name=$(echo "$1" | cut -d' ' -f1)
+
+    # 階層構造の管理上の都合で
+    # パラメータテストの prefix をテストクラスの後に付けた ID を生成する
+    # test_name: google test で内部的に扱うテスト名 (パラメータの prefix がテストクラスの前に付与されているもの)
+    # test_id: 人間系に見せるテスト名 (パラメータの prefix がテストクラス名の後、パラメータ名の前に付与されているもの)
+    local test_id
+    if [[ $(awk -F'/' '{print NF-1}' <<< "$test_name") -eq 2 ]]; then
+        test_id=$(echo "$test_name" | awk -F'/' '{print $2"/"$1"/"$3}')
+    else
+        test_id=$(echo "$test_name")
+    fi
+
     make clean-cov > /dev/null
-    mkdir -p results/$test_name
+    mkdir -p results/$test_id
     local temp_file=$(mktemp)
     local temp_exit_code=$(mktemp)
 
     # テストコードに着色する場合:
     # cat *.cc *.cpp 2>/dev/null | awk -v test_name=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk | source-highlight -s cpp -f esc;
-    LANG=$FILES_LANG script -q -c "echo \"\"; echo \"Running test: $test_name$test_comment\"; \
+    LANG=$FILES_LANG script -q -c "echo \"\"; echo \"Running test: $test_id$test_comment_delim$test_comment\"; \
         echo \"----\"; \
         cat *.cc *.cpp 2>/dev/null | awk -v test_id=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
         echo \"----\"; \
@@ -49,13 +63,13 @@ function run_test() {
 
     local result=$(cat $temp_exit_code)
     rm -f $temp_exit_code
-    cat $temp_file | sed -r 's/\x1b\[[0-9;]*m//g' > results/$test_name/results.log
+    cat $temp_file | sed -r 's/\x1b\[[0-9;]*m//g' > results/$test_id/results.log
     rm -f $temp_file
     make take-gcov > /dev/null
 
     if ls gcov/*.gcov 1> /dev/null 2>&1; then
         for file in gcov/*.gcov; do
-            cp -p "$file" "results/$test_name/$(basename "$file").txt"
+            cp -p "$file" "results/$test_id/$(basename "$file").txt"
         done
     fi
 
@@ -92,17 +106,32 @@ function main() {
     make clean-cov > /dev/null
     mkdir -p results/all_tests
 
+    echo -e ""
+    
     IFS=$'\n'
         for test_name_w_comment in $tests; do
             local temp_file=$(mktemp)
             local temp_exit_code=$(mktemp)
             local test_comment=""
+            local test_comment_delim=""
             if [[ "$test_name_w_comment" == *#* ]]; then
-                test_comment=" #${test_name_w_comment#*#}"
+                test_comment_delim=" "
+                test_comment="#${test_name_w_comment#*#}"
             fi
             local test_name=$(echo "$test_name_w_comment" | cut -d' ' -f1)
 
-            LANG=$FILES_LANG script -q -c "echo \"\"; echo \"Running test: $test_name$test_comment\"; \
+            # 階層構造の管理上の都合で
+            # パラメータテストの prefix をテストクラスの後に付けた ID を生成する
+            # test_name: google test で内部的に扱うテスト名 (パラメータの prefix がテストクラスの前に付与されているもの)
+            # test_id: 人間系に見せるテスト名 (パラメータの prefix がテストクラス名の後、パラメータ名の前に付与されているもの)
+            local test_id
+            if [[ $(awk -F'/' '{print NF-1}' <<< "$test_name") -eq 2 ]]; then
+                test_id=$(echo "$test_name" | awk -F'/' '{print $2"/"$1"/"$3}')
+            else
+                test_id=$(echo "$test_name")
+            fi
+
+            LANG=$FILES_LANG script -q -c "echo \"\"; echo \"Running test: $test_name$test_comment_delim$test_comment\"; \
                 echo \"----\"; \
                 cat *.cc *.cpp 2>/dev/null | awk -v test_id=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
                 echo \"----\"; \
@@ -114,14 +143,17 @@ function main() {
             rm -f $temp_exit_code
             if [ $result -eq 0 ]; then
                 if grep -q "WARNING" $temp_file; then
-                    echo -e "$test_name\tWARNING" >> results/all_tests/summary.log
+                    echo -e "$test_id\t\e[33mWARNING\e[0m\t$test_comment"
+                    echo -e "$test_id\tWARNING\t$test_comment" >> results/all_tests/summary.log
                     WARNING_COUNT=$((WARNING_COUNT + 1))
                 else
-                    echo -e "$test_name\tPASSED" >> results/all_tests/summary.log
+                    echo -e "$test_id\t\e[32mPASSED\e[0m\t$test_comment"
+                    echo -e "$test_id\tPASSED\t$test_comment" >> results/all_tests/summary.log
                     SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
                 fi
             else
-                echo -e "$test_name\tFAILED" >> results/all_tests/summary.log
+                echo -e "$test_id\t\e[31mFAILED\e[0m\t$test_comment"
+                echo -e "$test_id\tFAILED\t$test_comment" >> results/all_tests/summary.log
                 FAILURE_COUNT=$((FAILURE_COUNT + 1))
             fi
             cat $temp_file | sed -r 's/\x1b\[[0-9;]*m//g' >> results/all_tests/results.log
@@ -129,6 +161,7 @@ function main() {
         done
     unset IFS
 
+    echo -e "----\nTotal tests\t$(echo "$tests" | wc -l)\nPassed\t\t$SUCCESS_COUNT\nWarning(s)\t$WARNING_COUNT\nFailed\t\t$FAILURE_COUNT"
     echo -e "----\nTotal tests\t$(echo "$tests" | wc -l)\nPassed\t\t$SUCCESS_COUNT\nWarning(s)\t$WARNING_COUNT\nFailed\t\t$FAILURE_COUNT" >> results/all_tests/summary.log
     make take-cov > /dev/null
 
@@ -148,9 +181,6 @@ function main() {
             done
         fi
     fi
-
-    echo -e ""
-    cat results/all_tests/summary.log
 
     if [ $FAILURE_COUNT -eq 0 ]; then
         if [ $WARNING_COUNT -eq 0 ]; then
