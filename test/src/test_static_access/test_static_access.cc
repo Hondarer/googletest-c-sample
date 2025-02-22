@@ -6,7 +6,7 @@
 
 #include <sampleinc.h>
 
-#include "inject.h"
+#include "samplestatic.inject.h"
 
 using namespace testing;
 

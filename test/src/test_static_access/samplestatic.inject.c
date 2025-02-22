@@ -5,7 +5,7 @@
 #include "samplestatic.c"
 #endif // _IN_TEST_FRAMEWORK_
 
-#include "inject.h"
+#include "samplestatic.inject.h"
 
 void set_static_int(int set_value)
 {
