@@ -15,6 +15,7 @@ extern "C"
     extern int samplelogger(const int, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
     extern int samplefunc(const int, const int);
     extern int samplefunc2(const int, const int);
+    extern int samplestatic(void);
 
 #ifdef __cplusplus
 }
