@@ -143,6 +143,9 @@ $(notdir $(TEST_TARGET_SRCS_CPP_WITHOUT_INJECT) $(LINK_SRCS_CPP)):
 # テスト対象のソースファイルをコピーして inject ファイルを結合する
 $(notdir $(TEST_TARGET_SRCS_C_WITH_INJECT)): $(TEST_TARGET_SRCS_C_WITH_INJECT)
 	cp -p $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_C_WITH_INJECT) $(LINK_SRCS_C) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
+	@if [ "$$(tail -c 1 $(notdir $@) | od -An -tx1)" != " 0a" ]; then \
+		echo "" >> $(notdir $@); \
+	fi
 	echo "" >> $(notdir $@)
 	echo "/* Inject from test framework */" >> $(notdir $@)
 	echo "#ifdef _IN_TEST_FRAMEWORK_" >> $(notdir $@)
@@ -155,6 +158,8 @@ $(notdir $(TEST_TARGET_SRCS_C_WITH_INJECT)): $(TEST_TARGET_SRCS_C_WITH_INJECT)
 	mv $$tempfile .gitignore
 $(notdir $(TEST_TARGET_SRCS_CPP_WITH_INJECT)): $(TEST_TARGET_SRCS_CPP_WITH_INJECT))
 	cp -p $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPP_WITHOUT_INJECT) $(LINK_SRCS_CPP) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
+	@if [ "$$(tail -c 1 $(notdir $@) | od -An -tx1)" != " 0a" ]; then \
+		echo "" >> $(notdir $@); \
 	fi
 	echo "" >> $(notdir $@)
 	echo "/* Inject from test framework */" >> $(notdir $@)
