@@ -62,7 +62,7 @@ function run_test() {
         cat *.cc *.cpp 2>/dev/null | awk -v test_id=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
         echo \"----\"; \
         echo ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
-        ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
+        ./$TEST_BINARY --gtest_color=yes --gtest_filter=\"$test_name\" 2>&1 | grep -v \"Note: Google Test filter\"; \
         echo \$? > $temp_exit_code" $temp_file
 
     local result=$(cat $temp_exit_code)
@@ -85,11 +85,21 @@ function main() {
     rm -rf results
     mkdir results
 
-    echo "Listing all tests..."
-    tput cr
+    # google test は、GTEST_FILTER が定義されている場合は空文字でもフィルタを行う
+    # そのため、指定があるかどうかは環境変数の有無をチェックする必要がある
+    if [[ "${GTEST_FILTER+x}" ]]; then
+        echo -e "\e[33m"
+            echo "Note: GTEST_FILTER = $GTEST_FILTER"
+        echo -e "\e[0m"
+    fi
+
     tests=$(list_tests)
     #tests=$(echo "$tests" | sort)
-    echo "Found $(echo "$tests" | wc -l) tests."
+    test_count=$(echo "$tests" | wc -l)
+    if [[ -z "$tests" ]]; then
+        test_count=0
+    fi
+    echo "Found $test_count tests."
     tput cr
 
     IFS=$'\n'
@@ -115,6 +125,11 @@ function main() {
     echo -e ""
     
     local first_loop=0
+
+    if [[ "${GTEST_FILTER+x}" ]]; then
+        echo -e "Note: GTEST_FILTER = $GTEST_FILTER\n" >> results/all_tests/results.log
+        echo -e "Note: GTEST_FILTER = $GTEST_FILTER\n" >> results/all_tests/summary.log
+    fi
 
     IFS=$'\n'
         for test_name_w_comment in $tests; do
@@ -152,7 +167,7 @@ function main() {
                 cat *.cc *.cpp 2>/dev/null | awk -v test_id=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
                 echo \"----\"; \
                 echo ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
-                ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
+                ./$TEST_BINARY --gtest_filter=\"$test_name\" 2>&1 | grep -v \"Note: Google Test filter\"; \
                 echo \$? > $temp_exit_code" $temp_file > /dev/null
 
             local result=$(cat $temp_exit_code)
@@ -177,8 +192,13 @@ function main() {
         done
     unset IFS
 
-    echo -e "----\nTotal tests\t$(echo "$tests" | wc -l)\nPassed\t\t$SUCCESS_COUNT\nWarning(s)\t$WARNING_COUNT\nFailed\t\t$FAILURE_COUNT"
-    echo -e "----\nTotal tests\t$(echo "$tests" | wc -l)\nPassed\t\t$SUCCESS_COUNT\nWarning(s)\t$WARNING_COUNT\nFailed\t\t$FAILURE_COUNT" >> results/all_tests/summary.log
+    filtered=""
+    if [[ "${GTEST_FILTER+x}" ]]; then
+        filtered=" (filtered, $GTEST_FILTER)"
+    fi
+
+    echo -e "----\nTotal tests\t$test_count\e[33m$filtered\e[0m\nPassed\t\t$SUCCESS_COUNT\nWarning(s)\t$WARNING_COUNT\nFailed\t\t$FAILURE_COUNT"
+    echo -e "----\nTotal tests\t$test_count$filtered\nPassed\t\t$SUCCESS_COUNT\nWarning(s)\t$WARNING_COUNT\nFailed\t\t$FAILURE_COUNT" >> results/all_tests/summary.log
     make take-cov > /dev/null
 
     if ls gcov/*.gcov 1> /dev/null 2>&1; then
