@@ -11,7 +11,7 @@ WORKSPACE_FOLDER := $(shell \
 )
 
 # テスト対象のソースファイル
-# NOTE: シンボリックリンクで引き込むため、
+# NOTE: inject パターンでは、元フォルダから cp で複写して走査を行うため、
 #       テスト対象のソースファイルはカレントディレクトリ以外に存在する前提
 TEST_TARGET_SRCS_C := \
 	$(WORKSPACE_FOLDER)/prod/libsrc/sample/samplestatic.c

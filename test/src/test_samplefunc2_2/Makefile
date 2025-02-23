@@ -18,8 +18,6 @@ LINK_SRCS_C := \
 LINK_SRCS_CPP :=
 
 # テスト対象のソースファイル
-# NOTE: シンボリックリンクで引き込むため、
-#       テスト対象のソースファイルはカレントディレクトリ以外に存在する前提
 TEST_TARGET_SRCS_C := 
 TEST_TARGET_SRCS_CPP :=
 

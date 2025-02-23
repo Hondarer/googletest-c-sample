@@ -11,18 +11,13 @@ WORKSPACE_FOLDER := $(shell \
 )
 
 # テスト対象のソースファイル
+# ※ prod 配下ではなく、ここに直接テスト対象を配置する例
 TEST_TARGET_SRCS_C := \
-	$(WORKSPACE_FOLDER)/prod/src/testcommand/testcommand.c
+	testterget.c
 TEST_TARGET_SRCS_CPP :=
 
-# リンクオプションの設定
-# -Wl,--wrap=main により、エントリポイントを __wrap_main() に、元々のエントリポイントを __real_main() に変更
-LDCOMFLAGS := -Wl,--wrap=main
-
 # ライブラリの指定
-# -lgtest_wrapmain にて、__wrap_main() 経由でのテスト実施
-# テスト対象のソースファイルにある main() は実行されない
-LIBS := -lgtest_wrapmain -lmocklibc -lmocksample -ltestcom
+LIBS := -lmocklibc -lmocksample -ltestcom
 
 # src の Makefile テンプレートをインクルード
 include $(WORKSPACE_FOLDER)/test/src/makesrc.mk

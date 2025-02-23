@@ -11,8 +11,6 @@ WORKSPACE_FOLDER := $(shell \
 )
 
 # テスト対象のソースファイル
-# NOTE: シンボリックリンクで引き込むため、
-#       テスト対象のソースファイルはカレントディレクトリ以外に存在する前提
 TEST_TARGET_SRCS_C := \
 	$(WORKSPACE_FOLDER)/prod/libsrc/sample/samplelogger.c
 TEST_TARGET_SRCS_CPP :=

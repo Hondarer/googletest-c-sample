@@ -25,10 +25,17 @@ SRCS_CPP := $(wildcard *.cc) $(wildcard *.cpp)
 # そのソースファイルを inject ファイルとして扱う
 TEST_TARGET_SRCS_C_WITH_INJECT := $(foreach src,$(TEST_TARGET_SRCS_C), \
     $(if $(wildcard $(notdir $(basename $(src))).inject$(suffix $(src))),$(src)))
-TEST_TARGET_SRCS_C_WITHOUT_INJECT := $(filter-out $(TEST_TARGET_SRCS_C_WITH_INJECT),$(TEST_TARGET_SRCS_C))
+TEST_TARGET_SRCS_C_DIRECT := $(if $(filter-out $(TEST_TARGET_SRCS_C_WITH_INJECT),$(TEST_TARGET_SRCS_C)),$(shell for f in $(filter-out $(TEST_TARGET_SRCS_C_WITH_INJECT),$(TEST_TARGET_SRCS_C)); do \
+    if [ -f "./$$(basename $$f)" ] && [ ! -L "./$$(basename $$f)" ]; then echo $$f; fi; \
+done))
+TEST_TARGET_SRCS_C_WITHOUT_INJECT := $(filter-out $(TEST_TARGET_SRCS_C_WITH_INJECT) $(TEST_TARGET_SRCS_C_DIRECT),$(TEST_TARGET_SRCS_C))
+
 TEST_TARGET_SRCS_CPP_WITH_INJECT := $(foreach src,$(TEST_TARGET_SRCS_CPP), \
     $(if $(wildcard $(notdir $(basename $(src))).inject$(suffix $(src))),$(src)))
-TEST_TARGET_SRCS_CPP_WITHOUT_INJECT := $(filter-out $(TEST_TARGET_SRCS_CPP_WITH_INJECT),$(TEST_TARGET_SRCS_CPP))
+TEST_TARGET_SRCS_CPP_DIRECT := $(if $(filter-out $(TEST_TARGET_SRCS_CPP_WITH_INJECT),$(TEST_TARGET_SRCS_CPP)),$(shell for f in $(filter-out $(TEST_TARGET_SRCS_CPP_WITH_INJECT),$(TEST_TARGET_SRCS_CPP)); do \
+    if [ -f "./$$(basename $$f)" ] && [ ! -L "./$$(basename $$f)" ]; then echo $$f; fi; \
+done))
+TEST_TARGET_SRCS_CPP_WITHOUT_INJECT := $(filter-out $(TEST_TARGET_SRCS_CPP_WITH_INJECT) $(TEST_TARGET_SRCS_CPP_DIRECT),$(TEST_TARGET_SRCS_CPP))
 
 # c_cpp_properties.json から include ディレクトリを得る
 INCDIR := $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_include_paths.sh)
@@ -211,13 +218,13 @@ endif
 .PHONY: clean
 clean: clean-cov
 #   テスト対象から張ったシンボリックリンクを削除する
-	-@if [ -n "$(wildcard $(notdir $(TEST_TARGET_SRCS_C) $(LINK_SRCS_C)))" ] || [ -n "$(wildcard $(notdir $(TEST_TARGET_SRCS_CPP) $(LINK_SRCS_CPP)))" ]; then \
-		echo rm -f $(notdir $(TEST_TARGET_SRCS_C) $(LINK_SRCS_C)) $(notdir $(TEST_TARGET_SRCS_CPP) $(LINK_SRCS_CPP)); \
-		rm -f $(notdir $(TEST_TARGET_SRCS_C) $(LINK_SRCS_C)) $(notdir $(TEST_TARGET_SRCS_CPP) $(LINK_SRCS_CPP)); \
+	-@if [ -n "$(wildcard $(notdir $(TEST_TARGET_SRCS_C_WITH_INJECT) $(TEST_TARGET_SRCS_C_WITHOUT_INJECT) $(LINK_SRCS_C)))" ] || [ -n "$(wildcard $(notdir $(TEST_TARGET_SRCS_CPP_WITH_INJECT) $(TEST_TARGET_SRCS_CPP_WITHOUT_INJECT) $(LINK_SRCS_CPP)))" ]; then \
+		echo rm -f $(notdir $(TEST_TARGET_SRCS_C_WITH_INJECT) $(TEST_TARGET_SRCS_C_WITHOUT_INJECT) $(LINK_SRCS_C)) $(notdir $(TEST_TARGET_SRCS_CPP_WITH_INJECT) $(TEST_TARGET_SRCS_CPP_WITHOUT_INJECT) $(LINK_SRCS_CPP)); \
+		rm -f $(notdir $(TEST_TARGET_SRCS_C_WITH_INJECT) $(TEST_TARGET_SRCS_C_WITHOUT_INJECT) $(LINK_SRCS_C)) $(notdir $(TEST_TARGET_SRCS_CPP_WITH_INJECT) $(TEST_TARGET_SRCS_CPP_WITHOUT_INJECT) $(LINK_SRCS_CPP)); \
 	fi
 # .gitignore の再生成 (コミット差分が出ないように)
 	-rm -f .gitignore
-	@for ignorefile in $(notdir $(TEST_TARGET_SRCS_C) $(LINK_SRCS_C)) $(notdir $(TEST_TARGET_SRCS_CPP) $(LINK_SRCS_CPP)); \
+	@for ignorefile in $(notdir $(TEST_TARGET_SRCS_C_WITH_INJECT) $(TEST_TARGET_SRCS_C_WITHOUT_INJECT) $(LINK_SRCS_C)) $(notdir $(TEST_TARGET_SRCS_CPP_WITH_INJECT) $(TEST_TARGET_SRCS_CPP_WITHOUT_INJECT) $(LINK_SRCS_CPP)); \
 		do echo $$ignorefile >> .gitignore; \
 		tempfile=$$(mktemp) && \
 		sort .gitignore | uniq > $$tempfile && \
@@ -238,7 +245,7 @@ clean-cov:
 take-cov: take-gcov take-lcov
 
 # Check if both variables are empty
-ifneq ($(strip $(TEST_TARGET_SRCS_C)$(TEST_TARGET_SRCS_CPP)),)
+ifneq ($(strip $(TEST_TARGET_SRCS_C) $(TEST_TARGET_SRCS_CPP)),)
 
 .PHONY: take-gcov
 take-gcov: $(GCOVDIR)
