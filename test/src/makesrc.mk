@@ -82,7 +82,7 @@ CPPFLAGS_TEST := $(CPPCOMFLAGS) -I$(WORKSPACE_FOLDER)/test/include_override $(ad
 CFLAGS := $(CCOMFLAGS) $(addprefix -I, $(INCDIR))
 CPPFLAGS := $(CPPCOMFLAGS) $(addprefix -I, $(INCDIR))
 
-LDFLAGS := $(addprefix -L, $(LIBSDIR))
+LDFLAGS := $(LDCOMFLAGS) $(addprefix -L, $(LIBSDIR))
 
 # OBJS
 OBJS := $(filter-out $(OBJDIR)/%.inject.o, \
@@ -127,8 +127,8 @@ $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR)
 # C++ ソースファイルのコンパイル (*.cpp)
 $(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d | $(OBJDIR)
 	@set -o pipefail; if echo $(TEST_TARGET_SRCS_CPP) | grep -q $(notdir $<); then \
-		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
-		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
+		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -c -o -D_IN_TEST_FRAMEWORK_ $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
+		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -c -o -D_IN_TEST_FRAMEWORK_ $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 	else \
 		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
@@ -152,7 +152,7 @@ $(notdir $(TEST_TARGET_SRCS_CPP_WITHOUT_INJECT) $(LINK_SRCS_CPP)):
 
 # テスト対象のソースファイルをコピーして inject ファイルを結合する
 $(notdir $(TEST_TARGET_SRCS_C_WITH_INJECT)): $(TEST_TARGET_SRCS_C_WITH_INJECT)
-	cp -p $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_C_WITH_INJECT) $(LINK_SRCS_C) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
+	cp -p $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_C_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
 	@if [ "$$(tail -c 1 $(notdir $@) | od -An -tx1)" != " 0a" ]; then \
 		echo "" >> $(notdir $@); \
 	fi
@@ -166,8 +166,8 @@ $(notdir $(TEST_TARGET_SRCS_C_WITH_INJECT)): $(TEST_TARGET_SRCS_C_WITH_INJECT)
 	@tempfile=$$(mktemp) && \
 	sort .gitignore | uniq > $$tempfile && \
 	mv $$tempfile .gitignore
-$(notdir $(TEST_TARGET_SRCS_CPP_WITH_INJECT)): $(TEST_TARGET_SRCS_CPP_WITH_INJECT))
-	cp -p $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPP_WITHOUT_INJECT) $(LINK_SRCS_CPP) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
+$(notdir $(TEST_TARGET_SRCS_CPP_WITH_INJECT)): $(TEST_TARGET_SRCS_CPP_WITH_INJECT)
+	cp -p $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPP_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
 	@if [ "$$(tail -c 1 $(notdir $@) | od -An -tx1)" != " 0a" ]; then \
 		echo "" >> $(notdir $@); \
 	fi
@@ -265,8 +265,8 @@ take-lcov: $(LCOVDIR)
 #	genhtml は空のファイルを指定するとエラーを出力して終了するため
 #	lcov の出力ファイルが空でないか確認してから genhtml を実行する
 	@if [ -s $(OBJDIR)/$(TARGET).info ]; then \
-		echo genhtml -o $(LCOVDIR) $(OBJDIR)/$(TARGET).info; \
-		genhtml -o $(LCOVDIR) $(OBJDIR)/$(TARGET).info; \
+		echo genhtml --function-coverage -o $(LCOVDIR) $(OBJDIR)/$(TARGET).info; \
+		genhtml --function-coverage -o $(LCOVDIR) $(OBJDIR)/$(TARGET).info; \
 	else \
 		echo "No valid records found in tracefile $(OBJDIR)/$(TARGET).info."; \
 	fi

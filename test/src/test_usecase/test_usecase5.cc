@@ -42,7 +42,7 @@ TEST_P(MockClass5Test, MultiplyTest)
     EXPECT_EQ(result, expected);
 }
 
-// NOTE: get_test_code.awk での構文解析の都合で、s
+// NOTE: get_test_code.awk での構文解析の都合で、
 //       INSTANTIATE_TEST_SUITE_P の行には
 //       prefix (省略可能)、test_suite_name を同一行に記載し、
 //       最後に "," を付与する。

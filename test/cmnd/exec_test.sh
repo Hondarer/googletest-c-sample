@@ -51,10 +51,14 @@ function run_test() {
     local temp_file=$(mktemp)
     local temp_exit_code=$(mktemp)
 
+    echo -e "\nRunning test: $test_id$test_comment_delim$test_comment"
+    tput cr
+    echo -e "Running test: $test_id$test_comment_delim$test_comment" > $temp_file
+
     # テストコードに着色する場合:
     # cat *.cc *.cpp 2>/dev/null | awk -v test_name=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk | source-highlight -s cpp -f esc;
-    LANG=$FILES_LANG script -q -c "echo \"\"; echo \"Running test: $test_id$test_comment_delim$test_comment\"; \
-        echo \"----\"; \
+    LANG=$FILES_LANG script -q -a -c \
+       "echo \"----\"; \
         cat *.cc *.cpp 2>/dev/null | awk -v test_id=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
         echo \"----\"; \
         echo ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
@@ -82,9 +86,11 @@ function main() {
     mkdir results
 
     echo "Listing all tests..."
+    tput cr
     tests=$(list_tests)
     #tests=$(echo "$tests" | sort)
     echo "Found $(echo "$tests" | wc -l) tests."
+    tput cr
 
     IFS=$'\n'
         for test_name_w_comment in $tests; do
@@ -108,6 +114,8 @@ function main() {
 
     echo -e ""
     
+    local first_loop=0
+
     IFS=$'\n'
         for test_name_w_comment in $tests; do
             local temp_file=$(mktemp)
@@ -131,8 +139,16 @@ function main() {
                 test_id=$(echo "$test_name")
             fi
 
-            LANG=$FILES_LANG script -q -c "echo \"\"; echo \"Running test: $test_name$test_comment_delim$test_comment\"; \
-                echo \"----\"; \
+            if [ $first_loop -eq 0 ]; then
+                first_loop=1
+            else
+                echo "" > $temp_file
+            fi
+
+            echo -e "Running test: $test_id$test_comment_delim$test_comment" >> $temp_file
+
+            LANG=$FILES_LANG script -q -a -c \
+               "echo \"----\"; \
                 cat *.cc *.cpp 2>/dev/null | awk -v test_id=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk; \
                 echo \"----\"; \
                 echo ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
