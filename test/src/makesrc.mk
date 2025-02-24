@@ -134,8 +134,8 @@ $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR)
 # C++ ソースファイルのコンパイル (*.cpp)
 $(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d | $(OBJDIR)
 	@set -o pipefail; if echo $(TEST_TARGET_SRCS_CPP) | grep -q $(notdir $<); then \
-		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -c -o -D_IN_TEST_FRAMEWORK_ $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
-		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -c -o -D_IN_TEST_FRAMEWORK_ $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
+		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
+		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 	else \
 		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
@@ -149,6 +149,7 @@ $(notdir $(TEST_TARGET_SRCS_C_WITHOUT_INJECT) $(LINK_SRCS_C)):
 	@tempfile=$$(mktemp) && \
 	sort .gitignore | uniq > $$tempfile && \
 	mv $$tempfile .gitignore
+
 $(notdir $(TEST_TARGET_SRCS_CPP_WITHOUT_INJECT) $(LINK_SRCS_CPP)):
 	ln -s $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPP_WITHOUT_INJECT) $(LINK_SRCS_CPP) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
 #	.gitignore に対象ファイルを追加
@@ -173,6 +174,7 @@ $(notdir $(TEST_TARGET_SRCS_C_WITH_INJECT)): $(TEST_TARGET_SRCS_C_WITH_INJECT)
 	@tempfile=$$(mktemp) && \
 	sort .gitignore | uniq > $$tempfile && \
 	mv $$tempfile .gitignore
+
 $(notdir $(TEST_TARGET_SRCS_CPP_WITH_INJECT)): $(TEST_TARGET_SRCS_CPP_WITH_INJECT)
 	cp -p $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPP_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
 	@if [ "$$(tail -c 1 $(notdir $@) | od -An -tx1)" != " 0a" ]; then \
