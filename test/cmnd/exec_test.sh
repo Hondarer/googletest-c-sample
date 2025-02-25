@@ -63,7 +63,7 @@ function run_test() {
         echo \"----\"; \
         echo ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
         ./$TEST_BINARY --gtest_color=yes --gtest_filter=\"$test_name\" 2>&1 | grep -v \"Note: Google Test filter\"; \
-        echo \$? > $temp_exit_code" $temp_file
+        echo \${PIPESTATUS[0]} > $temp_exit_code" $temp_file
 
     local result=$(cat $temp_exit_code)
     rm -f $temp_exit_code
@@ -168,7 +168,7 @@ function main() {
                 echo \"----\"; \
                 echo ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
                 ./$TEST_BINARY --gtest_filter=\"$test_name\" 2>&1 | grep -v \"Note: Google Test filter\"; \
-                echo \$? > $temp_exit_code" $temp_file > /dev/null
+                echo \${PIPESTATUS[0]} > $temp_exit_code" $temp_file > /dev/null
 
             local result=$(cat $temp_exit_code)
             rm -f $temp_exit_code
