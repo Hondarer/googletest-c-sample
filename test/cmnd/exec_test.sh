@@ -63,7 +63,19 @@ function run_test() {
         echo \"----\"; \
         echo ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
         ./$TEST_BINARY --gtest_color=yes --gtest_filter=\"$test_name\" 2>&1 | grep -v \"Note: Google Test filter\"; \
-        echo \${PIPESTATUS[0]} > $temp_exit_code" $temp_file
+        exit_code=\${PIPESTATUS[0]}; \
+        if [ \$exit_code -ge 128 ]; then \
+            signal=\$((exit_code - 128)); \
+            echo -n -e \"\\n\\e[31m[  FAILED  ]\\e[0m Terminated by signal \$signal, \"; \
+            case \$signal in \
+                6)  echo \"SIGABRT: abort.\";; \
+                11) echo \"SIGSEGV: segmentation fault.\";; \
+                8)  echo \"SIGFPE: floating-point exception.\";; \
+                4)  echo \"SIGILL: illegal instruction.\";; \
+                *)  echo \"Abnormal termination by other signal.\";; \
+            esac; \
+        fi; \
+        echo \$exit_code > $temp_exit_code" $temp_file
 
     local result=$(cat $temp_exit_code)
     rm -f $temp_exit_code
@@ -168,7 +180,19 @@ function main() {
                 echo \"----\"; \
                 echo ./$TEST_BINARY --gtest_filter=\"$test_name\"; \
                 ./$TEST_BINARY --gtest_filter=\"$test_name\" 2>&1 | grep -v \"Note: Google Test filter\"; \
-                echo \${PIPESTATUS[0]} > $temp_exit_code" $temp_file > /dev/null
+                exit_code=\${PIPESTATUS[0]}; \
+                if [ \$exit_code -ge 128 ]; then \
+                    signal=\$((exit_code - 128)); \
+                    echo -n -e \"\\n\\e[31m[  FAILED  ]\\e[0m Terminated by signal \$signal, \"; \
+                    case \$signal in \
+                        6)  echo \"SIGABRT: abort.\";; \
+                        11) echo \"SIGSEGV: segmentation fault.\";; \
+                        8)  echo \"SIGFPE: floating-point exception.\";; \
+                        4)  echo \"SIGILL: illegal instruction.\";; \
+                        *)  echo \"Abnormal termination by other signal.\";; \
+                    esac; \
+                fi; \
+                echo \$exit_code > $temp_exit_code" $temp_file > /dev/null
 
             local result=$(cat $temp_exit_code)
             rm -f $temp_exit_code
