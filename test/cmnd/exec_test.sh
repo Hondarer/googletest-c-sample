@@ -81,7 +81,7 @@ function run_test() {
     rm -f $temp_exit_code
     cat $temp_file | sed -r 's/\x1b\[[0-9;]*m//g' > results/$test_id/results.log
     rm -f $temp_file
-    make take-gcov > /dev/null
+    make take-gcov 1> /dev/null 2>&1
 
     if ls gcov/*.gcov 1> /dev/null 2>&1; then
         for file in gcov/*.gcov; do
@@ -223,7 +223,7 @@ function main() {
 
     echo -e "----\nTotal tests\t$test_count\e[33m$filtered\e[0m\nPassed\t\t$SUCCESS_COUNT\nWarning(s)\t$WARNING_COUNT\nFailed\t\t$FAILURE_COUNT"
     echo -e "----\nTotal tests\t$test_count$filtered\nPassed\t\t$SUCCESS_COUNT\nWarning(s)\t$WARNING_COUNT\nFailed\t\t$FAILURE_COUNT" >> results/all_tests/summary.log
-    make take-cov > /dev/null
+    make take-cov 1> /dev/null 2>&1
 
     if ls gcov/*.gcov 1> /dev/null 2>&1; then
         for file in gcov/*.gcov; do
