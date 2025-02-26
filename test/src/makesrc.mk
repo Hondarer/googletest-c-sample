@@ -24,18 +24,38 @@ SRCS_CPP := $(wildcard *.cc) $(wildcard *.cpp)
 # テスト対象ソース、かつ、カレントディレクトリに .inject. が付与されたソースがある場合、
 # そのソースファイルを inject ファイルとして扱う
 TEST_TARGET_SRCS_C_WITH_INJECT := $(foreach src,$(TEST_TARGET_SRCS_C), \
-    $(if $(wildcard $(notdir $(basename $(src))).inject$(suffix $(src))),$(src)))
+    $(if $(or $(wildcard $(notdir $(basename $(src))).inject$(suffix $(src))), \
+              $(wildcard $(notdir $(src)).filter.sh)), \
+              $(src)))
 TEST_TARGET_SRCS_C_DIRECT := $(if $(filter-out $(TEST_TARGET_SRCS_C_WITH_INJECT),$(TEST_TARGET_SRCS_C)),$(shell for f in $(filter-out $(TEST_TARGET_SRCS_C_WITH_INJECT),$(TEST_TARGET_SRCS_C)); do \
     if [ -f "./$$(basename $$f)" ] && [ ! -L "./$$(basename $$f)" ]; then echo $$f; fi; \
 done))
 TEST_TARGET_SRCS_C_WITHOUT_INJECT := $(filter-out $(TEST_TARGET_SRCS_C_WITH_INJECT) $(TEST_TARGET_SRCS_C_DIRECT),$(TEST_TARGET_SRCS_C))
 
 TEST_TARGET_SRCS_CPP_WITH_INJECT := $(foreach src,$(TEST_TARGET_SRCS_CPP), \
-    $(if $(wildcard $(notdir $(basename $(src))).inject$(suffix $(src))),$(src)))
+    $(if $(or $(wildcard $(notdir $(basename $(src))).inject$(suffix $(src))), \
+              $(wildcard $(notdir $(src)).filter.sh)), \
+              $(src)))
 TEST_TARGET_SRCS_CPP_DIRECT := $(if $(filter-out $(TEST_TARGET_SRCS_CPP_WITH_INJECT),$(TEST_TARGET_SRCS_CPP)),$(shell for f in $(filter-out $(TEST_TARGET_SRCS_CPP_WITH_INJECT),$(TEST_TARGET_SRCS_CPP)); do \
     if [ -f "./$$(basename $$f)" ] && [ ! -L "./$$(basename $$f)" ]; then echo $$f; fi; \
 done))
 TEST_TARGET_SRCS_CPP_WITHOUT_INJECT := $(filter-out $(TEST_TARGET_SRCS_CPP_WITH_INJECT) $(TEST_TARGET_SRCS_CPP_DIRECT),$(TEST_TARGET_SRCS_CPP))
+
+# ソースの扱いがごちゃごちゃになってきたので以下は見直し案
+# ※まだこうなってない
+#
+# 【コンパイルオプションの観点】
+# ・テストの対象 (カバレッジ対象) のソースファイル				: TEST_SRCS_C, TEST_SRCS_CPP	外から指定
+#   - 現在は TEST_TARGET_SRCS_C, TEST_TARGET_SRCS_CPP
+# ・明示的にコンパイル対象としているソースファイル				: SRCS_C, SRCS_CPP				外から指定
+# ・その他のソースファイル										: OTHER_SRCS_C, OTHER_SRCS_CPP
+#   - 上記以外のカレントディレクトリに置かれているソースファイル
+#
+# 【ソース生成の観点】
+# ・シンボリックリンクが必要というソースファイル				: LINK_SRCS_C, LINK_SRCS_CPP
+#   - inject ファイル および フィルタファイルがない
+# ・コピーが必要というソースファイル							: CP_SRCS_C, CP_SRCS_CPP
+#   - inject ファイル または フィルタファイルがある
 
 # c_cpp_properties.json から include ディレクトリを得る
 INCDIR := $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_include_paths.sh)
@@ -158,17 +178,34 @@ $(notdir $(TEST_TARGET_SRCS_CPP_WITHOUT_INJECT) $(LINK_SRCS_CPP)):
 	sort .gitignore | uniq > $$tempfile && \
 	mv $$tempfile .gitignore
 
-# テスト対象のソースファイルをコピーして inject ファイルを結合する
+# テスト対象のソースファイルをコピーして
+# (1) フィルター処理をする
+# (2) inject ファイルを結合する
 $(notdir $(TEST_TARGET_SRCS_C_WITH_INJECT)): $(TEST_TARGET_SRCS_C_WITH_INJECT)
-	cp -p $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_C_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
-	@if [ "$$(tail -c 1 $(notdir $@) | od -An -tx1)" != " 0a" ]; then \
-		echo "" >> $(notdir $@); \
+	@if [ -f "$(notdir $@).filter.sh" ]; then \
+		echo "cat $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_C_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) | sh $(notdir $@).filter.sh > $(notdir $@)"; \
+		cat $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_C_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) | sh $(notdir $@).filter.sh > $(notdir $@); \
+		diff $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_C_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) $(notdir $@); set $?=0; \
+	else \
+		echo "cp -p $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_C_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)"; \
+		cp -p $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_C_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) $(notdir $@); \
 	fi
-	echo "" >> $(notdir $@)
-	echo "/* Inject from test framework */" >> $(notdir $@)
-	echo "#ifdef _IN_TEST_FRAMEWORK_" >> $(notdir $@)
-	echo "#include \"$(basename $(notdir $@)).inject$(suffix $(notdir $@))\"" >> $(notdir $@)
-	echo "#endif // _IN_TEST_FRAMEWORK_" >> $(notdir $@)
+	@if [ -f "$(notdir $(basename $@)).inject$(suffix $@)" ]; then \
+		if [ "$$(tail -c 1 $(notdir $@) | od -An -tx1)" != " 0a" ]; then \
+			echo "echo \"\" >> $(notdir $@)"; \
+			echo "" >> $(notdir $@); \
+		fi; \
+		echo "echo \"\" >> $(notdir $@)"; \
+		echo "" >> $(notdir $@); \
+		echo "echo \"/* Inject from test framework */\" >> $(notdir $@)"; \
+		echo "/* Inject from test framework */" >> $(notdir $@); \
+		echo "echo \"#ifdef _IN_TEST_FRAMEWORK_\" >> $(notdir $@)"; \
+		echo "#ifdef _IN_TEST_FRAMEWORK_" >> $(notdir $@); \
+		echo "echo \"#include \"$(basename $(notdir $@)).inject$(suffix $(notdir $@))\"\" >> $(notdir $@)"; \
+		echo "#include \"$(basename $(notdir $@)).inject$(suffix $(notdir $@))\"" >> $(notdir $@); \
+		echo "echo \"#endif // _IN_TEST_FRAMEWORK_\" >> $(notdir $@)"; \
+		echo "#endif // _IN_TEST_FRAMEWORK_" >> $(notdir $@); \
+	fi
 #	.gitignore に対象ファイルを追加
 	echo $(notdir $@) >> .gitignore
 	@tempfile=$$(mktemp) && \
@@ -176,15 +213,30 @@ $(notdir $(TEST_TARGET_SRCS_C_WITH_INJECT)): $(TEST_TARGET_SRCS_C_WITH_INJECT)
 	mv $$tempfile .gitignore
 
 $(notdir $(TEST_TARGET_SRCS_CPP_WITH_INJECT)): $(TEST_TARGET_SRCS_CPP_WITH_INJECT)
-	cp -p $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPP_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
-	@if [ "$$(tail -c 1 $(notdir $@) | od -An -tx1)" != " 0a" ]; then \
-		echo "" >> $(notdir $@); \
+	@if [ -f "$(notdir $@).filter.sh" ]; then \
+		echo "cat $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPP_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) | sh $(notdir $@).filter.sh > $(notdir $@)"; \
+		cat $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPP_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) | sh $(notdir $@).filter.sh > $(notdir $@); \
+		diff $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPP_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) $(notdir $@); set $?=0; \
+	else \
+		echo "cp -p $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPP_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)"; \
+		cp -p $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPP_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) $(notdir $@); \
 	fi
-	echo "" >> $(notdir $@)
-	echo "/* Inject from test framework */" >> $(notdir $@)
-	echo "#ifdef _IN_TEST_FRAMEWORK_" >> $(notdir $@)
-	echo "#include \"$(basename $(notdir $@)).inject$(suffix $(notdir $@))\"" >> $(notdir $@)
-	echo "#endif // _IN_TEST_FRAMEWORK_" >> $(notdir $@)
+	@if [ -f "$(notdir $(basename $@)).inject$(suffix $@)" ]; then \
+		if [ "$$(tail -c 1 $(notdir $@) | od -An -tx1)" != " 0a" ]; then \
+			echo "echo \"\" >> $(notdir $@)"; \
+			echo "" >> $(notdir $@); \
+		fi; \
+		echo "echo \"\" >> $(notdir $@)"; \
+		echo "" >> $(notdir $@); \
+		echo "echo \"/* Inject from test framework */\" >> $(notdir $@)"; \
+		echo "/* Inject from test framework */" >> $(notdir $@); \
+		echo "echo \"#ifdef _IN_TEST_FRAMEWORK_\" >> $(notdir $@)"; \
+		echo "#ifdef _IN_TEST_FRAMEWORK_" >> $(notdir $@); \
+		echo "echo \"#include \"$(basename $(notdir $@)).inject$(suffix $(notdir $@))\"\" >> $(notdir $@)"; \
+		echo "#include \"$(basename $(notdir $@)).inject$(suffix $(notdir $@))\"" >> $(notdir $@); \
+		echo "echo \"#endif // _IN_TEST_FRAMEWORK_\" >> $(notdir $@)"; \
+		echo "#endif // _IN_TEST_FRAMEWORK_" >> $(notdir $@); \
+	fi
 #	.gitignore に対象ファイルを追加
 	echo $(notdir $@) >> .gitignore
 	@tempfile=$$(mktemp) && \
