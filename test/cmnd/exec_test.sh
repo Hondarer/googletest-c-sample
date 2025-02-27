@@ -223,7 +223,7 @@ function main() {
 
     echo -e "----\nTotal tests\t$test_count\e[33m$filtered\e[0m\nPassed\t\t$SUCCESS_COUNT\nWarning(s)\t$WARNING_COUNT\nFailed\t\t$FAILURE_COUNT"
     echo -e "----\nTotal tests\t$test_count$filtered\nPassed\t\t$SUCCESS_COUNT\nWarning(s)\t$WARNING_COUNT\nFailed\t\t$FAILURE_COUNT" >> results/all_tests/summary.log
-    make take-cov 1> /dev/null 2>&1
+    make take-gcov take-lcov 1> /dev/null 2>&1
 
     if ls gcov/*.gcov 1> /dev/null 2>&1; then
         for file in gcov/*.gcov; do
@@ -241,6 +241,9 @@ function main() {
             done
         fi
     fi
+
+    echo "" | tee -a results/all_tests/summary.log
+    make --no-print-directory take-gcovr 2>&1 | grep -v "(INFO)" | grep -v "Directory:" | tee -a results/all_tests/summary.log
 
     if [ $FAILURE_COUNT -eq 0 ]; then
         if [ $WARNING_COUNT -eq 0 ]; then

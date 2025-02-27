@@ -42,6 +42,13 @@ DIRECT_SRCS := $(if $(filter-out $(CP_SRCS),$(TEST_SRCS)),$(shell for f in $(fil
 	done))
 LINK_SRCS := $(filter-out $(CP_SRCS) $(DIRECT_SRCS),$(TEST_SRCS) $(ADD_SRCS))
 
+# gcovr のフィルタを作成
+# gcovr では、シンボリックリンクの場合は、実パスを与える必要がある
+GCOVR_SRCS := $(foreach src,$(TEST_SRCS), \
+	$(if $(filter $(src),$(LINK_SRCS)), \
+		 $(src), \
+		 $(notdir $(src))))
+
 # コンパイル対象のソースファイル (カレントディレクトリから自動収集 + 指定ファイル)
 SRCS_C := $(wildcard *.c) $(filter %.c,$(CP_SRCS) $(LINK_SRCS))
 SRCS_CPP := $(wildcard *.cc) $(wildcard *.cpp) $(filter %.cc,$(CP_SRCS) $(LINK_SRCS)) $(filter %.cpp,$(CP_SRCS) $(LINK_SRCS))
@@ -247,10 +254,18 @@ clean-cov:
 	-rm -rf $(LCOVDIR)
 
 .PHONY: take-cov
-take-cov: take-gcov take-lcov
+take-cov: take-gcov take-lcov take-gcovr
 
 # Check if both variables are empty
 ifneq ($(strip $(TEST_SRCS)),)
+
+.PHONY: take-gcovr
+take-gcovr:
+# gcovr (dnf install python3.11 python3.11-pip; pip3.11 install gcovr)
+	@if command -v gcovr > /dev/null 2>&1; then \
+		#gcovr --exclude-unreachable-branches --cobertura-pretty --output coverage.xml --filter "$(shell echo $(GCOVR_SRCS) | tr ' ' '|')" > /dev/null 2>&1; \
+		gcovr --exclude-unreachable-branches --filter "$(shell echo $(GCOVR_SRCS) | tr ' ' '|')"; \
+	fi
 
 .PHONY: take-gcov
 take-gcov: $(GCOVDIR)
@@ -293,6 +308,10 @@ take-lcov: $(LCOVDIR)
 	fi
 
 else
+
+.PHONY: take-gcovr
+take-gcovr:
+	@echo "No target source files for coverage measurement."
 
 .PHONY: take-gcov
 take-gcov: $(GCOVDIR)
