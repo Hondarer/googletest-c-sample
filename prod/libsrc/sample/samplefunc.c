@@ -9,7 +9,11 @@ int samplefunc(const int a, const int b)
     {
         samplelogger(LOG_WARN, "b is zero\n");
         samplelogger(LOG_INFO, "samplefunc end result=%d\n", -1);
+#ifdef DEBUG
+        return -2;
+#else
         return -1;
+#endif
     }
     result = a / b;
     samplelogger(LOG_INFO, "samplefunc end result=%d\n", result);

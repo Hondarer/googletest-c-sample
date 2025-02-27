@@ -50,7 +50,11 @@ TEST_F(test_samplefunc, call_times_check_with_args)
     int rtc = samplefunc(12, 0);
 
     // Assert
+#ifdef DEBUG
+    EXPECT_EQ(-2, rtc);
+#else
     EXPECT_EQ(-1, rtc);
+#endif
 }
 /* テストのコメント テスト結果にも載る */
 TEST_F(test_samplefunc, will_without_InSequence)
@@ -70,8 +74,12 @@ TEST_F(test_samplefunc, will_without_InSequence)
     // Act
     int rtc = samplefunc(12, 0);
 
-    // Assert
+// Assert
+#ifdef DEBUG
+    EXPECT_EQ(-2, rtc);
+#else
     EXPECT_EQ(-1, rtc);
+#endif
 }
 
 TEST_F(test_samplefunc, times_with_InSequence)
@@ -92,8 +100,12 @@ TEST_F(test_samplefunc, times_with_InSequence)
     // Act
     int rtc = samplefunc(12, 0);
 
-    // Assert
+// Assert
+#ifdef DEBUG
+    EXPECT_EQ(-2, rtc);
+#else
     EXPECT_EQ(-1, rtc);
+#endif
 }
 
 TEST_F(test_samplefunc, mix_with_InSequence)
@@ -114,6 +126,10 @@ TEST_F(test_samplefunc, mix_with_InSequence)
     // Act
     int rtc = samplefunc(12, 0);
 
-    // Assert
+// Assert
+#ifdef DEBUG
+    EXPECT_EQ(-2, rtc);
+#else
     EXPECT_EQ(-1, rtc);
+#endif
 }
