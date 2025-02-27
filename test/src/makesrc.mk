@@ -28,7 +28,7 @@ endif
 # ・コピーが必要というソースファイル							: CP_SRCS
 #   - inject ファイル または フィルタファイルがある
 # ・直接配置のソースファイル									: DIRECT_SRCS
-#   - TEST_SRCS に指定されたファイルで、カレントディレクトリに配置されているもの
+#   - TEST_SRCS, ADD_SRCS に指定されていて、カレントディレクトリに配置されているもの
 
 # inject, filter 判定
 CP_SRCS :=  $(foreach src,$(TEST_SRCS) $(ADD_SRCS), \
@@ -159,10 +159,11 @@ $(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d | $(OBJDIR)
 	fi
 
 # シンボリックリンク対象のソースファイルからシンボリックリンクを張る
-$(notdir $(LINK_SRCS)): $(LINK_SRCS)
-	ln -s $(shell realpath --relative-to=. $(shell echo $(LINK_SRCS) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
+$(notdir $(LINK_SRCS)):
+#	LINK_SRCS の notdir を引数に、LINK_SRCS に存在するフルパスを得る
+	ln -s $(shell printf '%s\n' $(LINK_SRCS) | awk '{ notdir=$$0; sub(".*/", "", notdir); if (notdir == "$@") { print $$0 }}') $@
 #	.gitignore に対象ファイルを追加
-	echo $(notdir $@) >> .gitignore
+	echo $@ >> .gitignore
 	@tempfile=$$(mktemp) && \
 	sort .gitignore | uniq > $$tempfile && \
 	mv $$tempfile .gitignore
@@ -171,32 +172,34 @@ $(notdir $(LINK_SRCS)): $(LINK_SRCS)
 # (1) フィルター処理をする
 # (2) inject ファイルを結合する
 $(notdir $(CP_SRCS)): $(CP_SRCS)
-	@if [ -f "$(notdir $@).filter.sh" ]; then \
-		echo "cat $(shell realpath --relative-to=. $(shell echo $(CP_SRCS) | tr ' ' '\n' | awk '/$@/')) | sh $(notdir $@).filter.sh > $(notdir $@)"; \
-		cat $(shell realpath --relative-to=. $(shell echo $(CP_SRCS) | tr ' ' '\n' | awk '/$@/')) | sh $(notdir $@).filter.sh > $(notdir $@); \
-		diff $(shell realpath --relative-to=. $(shell echo $(CP_SRCS) | tr ' ' '\n' | awk '/$@/')) $(notdir $@); set $?=0; \
+#	CP_SRCS の notdir を引数に、CP_SRCS に存在するフルパスを得る
+	@CP_SRC=$(shell printf '%s\n' $(CP_SRCS) | awk '{ notdir=$$0; sub(".*/", "", notdir); if (notdir == "$@") { print $$0 }}'); \
+	if [ -f "$@.filter.sh" ]; then \
+		echo "cat $$CP_SRC | sh $@.filter.sh > $@"; \
+		cat $$CP_SRC | sh $@.filter.sh > $@; \
+		diff $$CP_SRC $@; set $?=0; \
 	else \
-		echo "cp -p $(shell realpath --relative-to=. $(shell echo $(CP_SRCS) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)"; \
-		cp -p $(shell realpath --relative-to=. $(shell echo $(CP_SRCS) | tr ' ' '\n' | awk '/$@/')) $(notdir $@); \
+		echo "cp -p $$CP_SRC $@"; \
+		cp -p $$CP_SRC $@; \
 	fi
 	@if [ -f "$(notdir $(basename $@)).inject$(suffix $@)" ]; then \
-		if [ "$$(tail -c 1 $(notdir $@) | od -An -tx1)" != " 0a" ]; then \
-			echo "echo \"\" >> $(notdir $@)"; \
-			echo "" >> $(notdir $@); \
+		if [ "$$(tail -c 1 $@ | od -An -tx1)" != " 0a" ]; then \
+			echo "echo \"\" >> $@"; \
+			echo "" >> $@; \
 		fi; \
-		echo "echo \"\" >> $(notdir $@)"; \
-		echo "" >> $(notdir $@); \
-		echo "echo \"/* Inject from test framework */\" >> $(notdir $@)"; \
-		echo "/* Inject from test framework */" >> $(notdir $@); \
-		echo "echo \"#ifdef _IN_TEST_FRAMEWORK_\" >> $(notdir $@)"; \
-		echo "#ifdef _IN_TEST_FRAMEWORK_" >> $(notdir $@); \
-		echo "echo \"#include \"$(basename $(notdir $@)).inject$(suffix $(notdir $@))\"\" >> $(notdir $@)"; \
-		echo "#include \"$(basename $(notdir $@)).inject$(suffix $(notdir $@))\"" >> $(notdir $@); \
-		echo "echo \"#endif // _IN_TEST_FRAMEWORK_\" >> $(notdir $@)"; \
-		echo "#endif // _IN_TEST_FRAMEWORK_" >> $(notdir $@); \
+		echo "echo \"\" >> $@"; \
+		echo "" >> $@; \
+		echo "echo \"/* Inject from test framework */\" >> $@"; \
+		echo "/* Inject from test framework */" >> $@; \
+		echo "echo \"#ifdef _IN_TEST_FRAMEWORK_\" >> $@"; \
+		echo "#ifdef _IN_TEST_FRAMEWORK_" >> $@; \
+		echo "echo \"#include \"$(basename $@).inject$(suffix $@)\"\" >> $@"; \
+		echo "#include \"$(basename $@).inject$(suffix $@)\"" >> $@; \
+		echo "echo \"#endif // _IN_TEST_FRAMEWORK_\" >> $@"; \
+		echo "#endif // _IN_TEST_FRAMEWORK_" >> $@; \
 	fi
 #	.gitignore に対象ファイルを追加
-	echo $(notdir $@) >> .gitignore
+	echo $@ >> .gitignore
 	@tempfile=$$(mktemp) && \
 	sort .gitignore | uniq > $$tempfile && \
 	mv $$tempfile .gitignore
