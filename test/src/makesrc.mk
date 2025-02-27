@@ -49,7 +49,8 @@ SRCS_CPP := $(wildcard *.cc) $(wildcard *.cpp) $(filter %.cc,$(CP_SRCS) $(LINK_S
 # c_cpp_properties.json から include ディレクトリを得る
 INCDIR := $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_include_paths.sh)
 
-LIBSDIR := \
+# 外部で LIBSDIR が指定されている場合は維持して結合
+LIBSDIR += \
 	$(WORKSPACE_FOLDER)/test/lib
 
 LIBSFILES := $(shell for dir in $(LIBSDIR); do find $$dir -maxdepth 1 -type f; done)
