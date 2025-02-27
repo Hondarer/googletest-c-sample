@@ -3,12 +3,13 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**",
                 "/usr/local/include",
                 "${workspaceFolder}/prod/include",
                 "${workspaceFolder}/test/include"
             ],
-            "defines": [],
+            "defines": [
+                "GOOGLETEST_C_SAMPLE"
+            ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c99",
             "cppStandard": "gnu++14",

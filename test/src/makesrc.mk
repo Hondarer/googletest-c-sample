@@ -96,6 +96,10 @@ ifeq ($(findstring -g,$(CPPCOMFLAGS)),)
   CPPCOMFLAGS += -g
 endif
 
+# ワークスペース名を -D に追加する
+CCOMFLAGS += -D$(subst -,_,$(shell echo $(notdir $(WORKSPACE_FOLDER)) | tr '[:lower:]' '[:upper:]'))
+CPPCOMFLAGS += -D$(subst -,_,$(shell echo $(notdir $(WORKSPACE_FOLDER)) | tr '[:lower:]' '[:upper:]'))
+
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
 
 # NOTE: テスト対象の場合は、CCOMFLAGS の後、通常の include の前に include_override を追加する
@@ -309,6 +313,15 @@ take-gcov: $(GCOVDIR)
 #	-bc オプションは可読性に問題があるので、使用しない (lcov の結果で確認可能)
 #	gcov -bc $(TEST_TARGET_SRCS_C) $(TEST_TARGET_SRCS_CPP) -o $(OBJDIR)
 	gcov $(TEST_TARGET_SRCS_C) $(TEST_TARGET_SRCS_CPP) -o $(OBJDIR)
+#	カバレッジ未通過の *.gcov ファイルは削除する
+	@if [ -n "$$(ls *.gcov 2>/dev/null)" ]; then \
+		for file in *.gcov; do \
+			if ! grep -qE '^\s*[0-9]+\*?:' "$$file"; then \
+				echo "rm $$file # No coverage data"; \
+				rm "$$file"; \
+			fi; \
+		done \
+	fi
 	mv *.gcov $(GCOVDIR)/.
 
 .PHONY: take-lcov

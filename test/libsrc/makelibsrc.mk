@@ -42,6 +42,10 @@ ifeq ($(findstring -g,$(CPPCOMFLAGS)),)
   CPPCOMFLAGS += -g
 endif
 
+# ワークスペース名を -D に追加する
+CCOMFLAGS += -D$(subst -,_,$(shell echo $(notdir $(WORKSPACE_FOLDER)) | tr '[:lower:]' '[:upper:]'))
+CPPCOMFLAGS += -D$(subst -,_,$(shell echo $(notdir $(WORKSPACE_FOLDER)) | tr '[:lower:]' '[:upper:]'))
+
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
 CFLAGS := $(CCOMFLAGS) $(addprefix -I, $(INCDIR))
 CPPFLAGS := $(CPPCOMFLAGS) $(addprefix -I, $(INCDIR))
