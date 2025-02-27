@@ -35,7 +35,7 @@ CP_SRCS :=  $(foreach src,$(TEST_SRCS) $(ADD_SRCS), \
 	$(if $(or $(wildcard $(notdir $(basename $(src))).inject$(suffix $(src))), \
 		$(wildcard $(notdir $(src)).filter.sh)), \
 		$(src)))
-DIRECT_SRCS := $(if $(filter-out $(CP_SRCS),$(TEST_SRCS)),$(shell for f in $(filter-out $(CP_SRCS),$(TEST_SRCS)); do \
+DIRECT_SRCS := $(if $(filter-out $(CP_SRCS),$(TEST_SRCS) $(ADD_SRCS)),$(shell for f in $(filter-out $(CP_SRCS),$(TEST_SRCS) $(ADD_SRCS)); do \
     if [ -f "./$$(basename $$f)" ] && [ ! -L "./$$(basename $$f)" ]; then \
 		echo $$f; \
 	fi; \
