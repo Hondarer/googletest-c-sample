@@ -10,6 +10,9 @@ WORKSPACE_FOLDER := $(shell \
     done \
 )
 
+# 直近の makeflags.mk を探索
+include $(WORKSPACE_FOLDER)/test/include_flags.mk
+
 # テスト対象のソースファイル
 TEST_SRCS := \
 	$(WORKSPACE_FOLDER)/prod/libsrc/sample/samplefunc.c

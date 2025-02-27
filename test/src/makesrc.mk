@@ -1,8 +1,5 @@
 SHELL := /bin/bash
 
-# 副作用を防ぐため、はじめに include する
-include $(WORKSPACE_FOLDER)/test/common_flags.mk
-
 # ソースファイルのエンコード指定から LANG を得る
 FILES_LANG := $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_files_lang.sh)
 
