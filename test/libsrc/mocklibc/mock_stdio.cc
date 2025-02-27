@@ -20,6 +20,9 @@ Mock_stdio::Mock_stdio()
     ON_CALL(*this, fprintf(_, _))
         .WillByDefault(Invoke(delegate_real_fprintf));
 
+    ON_CALL(*this, scanf(_, _))
+        .WillByDefault(Invoke(delegate_real_scanf));
+
     _mock_stdio = this;
 }
 

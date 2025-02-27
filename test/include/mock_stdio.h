@@ -12,6 +12,7 @@ extern "C"
     extern int mock_fflush(FILE *);
     extern FILE *mock_fopen(const char *, const char *);
     extern int mock_fprintf(FILE *, const char *, ...) __attribute__((format(printf, 2, 3)));
+    extern int mock_scanf(const char *, ...) __attribute__((format(scanf, 1, 2)));
 
 #ifdef __cplusplus
 }
@@ -23,6 +24,7 @@ extern "C"
 #define fflush(stream) mock_fflush(stream)
 #define fopen(filename, modes) mock_fopen(filename, modes)
 #define fprintf(stream, format, ...) mock_fprintf(stream, format, ##__VA_ARGS__)
+#define scanf(format, ...) mock_scanf(format, ##__VA_ARGS__)
 
 #else // _IN_OVERRIDE_HEADER_STDIO_H_
 
@@ -32,11 +34,13 @@ extern int mock_fclose_enable_trace;
 extern int mock_fflush_enable_trace;
 extern int mock_fopen_enable_trace;
 extern int mock_fprintf_enable_trace;
+extern int mock_scanf_enable_trace;
 
 extern int delegate_real_fclose(FILE *);
 extern int delegate_real_fflush(FILE *);
 extern FILE *delegate_real_fopen(const char *, const char *);
 extern int delegate_real_fprintf(FILE *, const char *);
+extern int delegate_real_scanf(const char *, va_list);
 
 class Mock_stdio
 {
@@ -46,6 +50,7 @@ public:
     MOCK_METHOD(int, fflush, (FILE *));
     MOCK_METHOD(FILE *, fopen, (const char *, const char *));
     MOCK_METHOD(int, fprintf, (FILE *, const char *));
+    MOCK_METHOD(int, scanf, (const char *, va_list));
 
     Mock_stdio();
     ~Mock_stdio();
