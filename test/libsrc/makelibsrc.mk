@@ -31,7 +31,7 @@ CP_SRCS :=  $(foreach src,$(ADD_SRCS), \
 		$(src)))
 LINK_SRCS := $(filter-out $(CP_SRCS),$(ADD_SRCS))
 
-# コンパイル対象のソースファイル (カレントディレクトリから自動収集)
+# コンパイル対象のソースファイル (カレントディレクトリから自動収集 + 指定ファイル)
 SRCS_C := $(wildcard *.c) $(filter %.c,$(CP_SRCS) $(LINK_SRCS))
 SRCS_CPP := $(wildcard *.cc) $(wildcard *.cpp) $(filter %.cc,$(CP_SRCS) $(LINK_SRCS)) $(filter %.cpp,$(CP_SRCS) $(LINK_SRCS))
 
@@ -152,7 +152,6 @@ clean:
 			echo ar d $(TARGETDIR)/$(TARGET) $$(basename $$obj); \
 			ar d $(TARGETDIR)/$(TARGET) $$(basename $$obj); \
 		done; \
-		ar tv $(TARGETDIR)/$(TARGET); \
     fi
 #   シンボリックリンクされたソース、コピー対象のソースを削除する
 	-@if [ -n "$(wildcard $(notdir $(CP_SRCS) $(LINK_SRCS)))" ]; then \
