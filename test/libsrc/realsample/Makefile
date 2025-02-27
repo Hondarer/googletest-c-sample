@@ -10,12 +10,9 @@ WORKSPACE_FOLDER := $(shell \
     done \
 )
 
-# シンボリックリンク対象のソースファイル
-# NOTE: シンボリックリンクで引き込むため、
-#       シンボリックリンク対象のソースファイルはカレントディレクトリ以外に存在する前提
-LINK_SRCS_C := \
+# フォルダ外の追加ソースファイル
+ADD_SRCS := \
 	$(WORKSPACE_FOLDER)/prod/libsrc/sample/samplefunc2.c
-LINK_SRCS_CPP :=
 
 # libsrc の Makefile テンプレートをインクルード
 include $(WORKSPACE_FOLDER)/test/libsrc/makelibsrc.mk

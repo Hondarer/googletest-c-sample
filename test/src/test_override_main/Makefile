@@ -11,9 +11,8 @@ WORKSPACE_FOLDER := $(shell \
 )
 
 # テスト対象のソースファイル
-TEST_TARGET_SRCS_C := \
+TEST_SRCS := \
 	$(WORKSPACE_FOLDER)/prod/src/testcommand/testcommand.c
-TEST_TARGET_SRCS_CPP :=
 
 # リンクオプションの設定
 # -Wl,--wrap=main により、エントリポイントを __wrap_main() に、元々のエントリポイントを __real_main() に変更

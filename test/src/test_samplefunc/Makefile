@@ -11,9 +11,8 @@ WORKSPACE_FOLDER := $(shell \
 )
 
 # テスト対象のソースファイル
-TEST_TARGET_SRCS_C := \
+TEST_SRCS := \
 	$(WORKSPACE_FOLDER)/prod/libsrc/sample/samplefunc.c
-TEST_TARGET_SRCS_CPP :=
 
 # ライブラリの指定
 LIBS := -lmocklibc -lmocksample -ltestcom

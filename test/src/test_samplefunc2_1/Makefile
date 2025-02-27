@@ -11,8 +11,7 @@ WORKSPACE_FOLDER := $(shell \
 )
 
 # テスト対象のソースファイル
-TEST_TARGET_SRCS_C := 
-TEST_TARGET_SRCS_CPP :=
+TEST_SRCS := 
 
 # ライブラリの指定
 LIBS := -lrealsample -lmocklibc -lmocksample -ltestcom

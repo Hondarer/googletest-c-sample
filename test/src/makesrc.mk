@@ -16,46 +16,38 @@ ifeq ($(TARGET),)
 	TARGET := $(shell basename `pwd`)
 endif
 
-# コンパイル対象のソースファイル (カレントディレクトリから自動収集)
-SRCS_C := $(wildcard *.c)
-SRCS_CPP := $(wildcard *.cc) $(wildcard *.cpp)
-
-# injectファイル対応ソースかどうかを判定
-# テスト対象ソース、かつ、カレントディレクトリに .inject. が付与されたソースがある場合、
-# そのソースファイルを inject ファイルとして扱う
-TEST_TARGET_SRCS_C_WITH_INJECT := $(foreach src,$(TEST_TARGET_SRCS_C), \
-    $(if $(or $(wildcard $(notdir $(basename $(src))).inject$(suffix $(src))), \
-              $(wildcard $(notdir $(src)).filter.sh)), \
-              $(src)))
-TEST_TARGET_SRCS_C_DIRECT := $(if $(filter-out $(TEST_TARGET_SRCS_C_WITH_INJECT),$(TEST_TARGET_SRCS_C)),$(shell for f in $(filter-out $(TEST_TARGET_SRCS_C_WITH_INJECT),$(TEST_TARGET_SRCS_C)); do \
-    if [ -f "./$$(basename $$f)" ] && [ ! -L "./$$(basename $$f)" ]; then echo $$f; fi; \
-done))
-TEST_TARGET_SRCS_C_WITHOUT_INJECT := $(filter-out $(TEST_TARGET_SRCS_C_WITH_INJECT) $(TEST_TARGET_SRCS_C_DIRECT),$(TEST_TARGET_SRCS_C))
-
-TEST_TARGET_SRCS_CPP_WITH_INJECT := $(foreach src,$(TEST_TARGET_SRCS_CPP), \
-    $(if $(or $(wildcard $(notdir $(basename $(src))).inject$(suffix $(src))), \
-              $(wildcard $(notdir $(src)).filter.sh)), \
-              $(src)))
-TEST_TARGET_SRCS_CPP_DIRECT := $(if $(filter-out $(TEST_TARGET_SRCS_CPP_WITH_INJECT),$(TEST_TARGET_SRCS_CPP)),$(shell for f in $(filter-out $(TEST_TARGET_SRCS_CPP_WITH_INJECT),$(TEST_TARGET_SRCS_CPP)); do \
-    if [ -f "./$$(basename $$f)" ] && [ ! -L "./$$(basename $$f)" ]; then echo $$f; fi; \
-done))
-TEST_TARGET_SRCS_CPP_WITHOUT_INJECT := $(filter-out $(TEST_TARGET_SRCS_CPP_WITH_INJECT) $(TEST_TARGET_SRCS_CPP_DIRECT),$(TEST_TARGET_SRCS_CPP))
-
-# ソースの扱いがごちゃごちゃになってきたので以下は見直し案
-# ※まだこうなってない
-#
+# 【コンパイルの観点】
+# ・C のソース													: SRCS_C
+# ・C++ のソース												: SRCS_CPP
 # 【コンパイルオプションの観点】
-# ・テストの対象 (カバレッジ対象) のソースファイル				: TEST_SRCS_C, TEST_SRCS_CPP	外から指定
-#   - 現在は TEST_TARGET_SRCS_C, TEST_TARGET_SRCS_CPP
-# ・明示的にコンパイル対象としているソースファイル				: SRCS_C, SRCS_CPP				外から指定
-# ・その他のソースファイル										: OTHER_SRCS_C, OTHER_SRCS_CPP
+# ・テストの対象 (カバレッジ対象) のソースファイル				: TEST_SRCS	外から指定
+# ・フォルダ外の追加ソースファイル								: ADD_SRCS	外から指定
+# ・その他のソースファイル
 #   - 上記以外のカレントディレクトリに置かれているソースファイル
 #
 # 【ソース生成の観点】
-# ・シンボリックリンクが必要というソースファイル				: LINK_SRCS_C, LINK_SRCS_CPP
+# ・シンボリックリンクが必要というソースファイル				: LINK_SRCS
 #   - inject ファイル および フィルタファイルがない
-# ・コピーが必要というソースファイル							: CP_SRCS_C, CP_SRCS_CPP
+# ・コピーが必要というソースファイル							: CP_SRCS
 #   - inject ファイル または フィルタファイルがある
+# ・直接配置のソースファイル									: DIRECT_SRCS
+#   - TEST_SRCS に指定されたファイルで、カレントディレクトリに配置されているもの
+
+# inject, filter 判定
+CP_SRCS :=  $(foreach src,$(TEST_SRCS) $(ADD_SRCS), \
+	$(if $(or $(wildcard $(notdir $(basename $(src))).inject$(suffix $(src))), \
+		$(wildcard $(notdir $(src)).filter.sh)), \
+		$(src)))
+DIRECT_SRCS := $(if $(filter-out $(CP_SRCS),$(TEST_SRCS)),$(shell for f in $(filter-out $(CP_SRCS),$(TEST_SRCS)); do \
+    if [ -f "./$$(basename $$f)" ] && [ ! -L "./$$(basename $$f)" ]; then \
+		echo $$f; \
+	fi; \
+	done))
+LINK_SRCS := $(filter-out $(CP_SRCS) $(DIRECT_SRCS),$(TEST_SRCS) $(ADD_SRCS))
+
+# コンパイル対象のソースファイル (カレントディレクトリから自動収集 + 指定ファイル)
+SRCS_C := $(wildcard *.c) $(filter %.c,$(CP_SRCS) $(LINK_SRCS))
+SRCS_CPP := $(wildcard *.cc) $(wildcard *.cpp) $(filter %.cc,$(CP_SRCS) $(LINK_SRCS)) $(filter %.cpp,$(CP_SRCS) $(LINK_SRCS))
 
 # c_cpp_properties.json から include ディレクトリを得る
 INCDIR := $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_include_paths.sh)
@@ -118,13 +110,9 @@ LDFLAGS := $(LDCOMFLAGS) $(addprefix -L, $(LIBSDIR))
 # OBJS
 OBJS := $(filter-out $(OBJDIR)/%.inject.o, \
     $(sort $(addprefix $(OBJDIR)/, \
-    $(notdir $(SRCS_C:.c=.o) $(TEST_TARGET_SRCS_C:.c=.o) $(LINK_SRCS_C:.c=.o) \
-    $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(SRCS_CPP) $(TEST_TARGET_SRCS_CPP) $(LINK_SRCS_CPP)))))))
+    $(notdir $(patsubst %.c, %.o, $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(SRCS_C) $(SRCS_CPP))))))))
 # DEPS
-DEPS := $(filter-out $(OBJDIR)/%.inject.d, \
-    $(sort $(addprefix $(OBJDIR)/, \
-    $(notdir $(SRCS_C:.c=.d) $(TEST_TARGET_SRCS_C:.c=.d) $(LINK_SRCS_C:.c=.d) \
-    $(patsubst %.cc, %.d, $(patsubst %.cpp, %.d, $(SRCS_CPP) $(TEST_TARGET_SRCS_CPP) $(LINK_SRCS_CPP)))))))
+DEPS := $(patsubst %.o, %.d, $(OBJS))
 
 ifndef NO_LINK
 # 実行体の生成
@@ -137,7 +125,7 @@ endif
 
 # C ソースファイルのコンパイル
 $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR)
-	@set -o pipefail; if echo $(TEST_TARGET_SRCS_C) | grep -q $(notdir $<); then \
+	@set -o pipefail; if echo $(TEST_SRCS) | grep -q $(notdir $<); then \
 		echo LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 		LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 	else \
@@ -147,7 +135,7 @@ $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR)
 
 # C++ ソースファイルのコンパイル (*.cc)
 $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR)
-	@set -o pipefail; if echo $(TEST_TARGET_SRCS_CPP) | grep -q $(notdir $<); then \
+	@set -o pipefail; if echo $(TEST_SRCS) | grep -q $(notdir $<); then \
 		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 	else \
@@ -157,7 +145,7 @@ $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR)
 
 # C++ ソースファイルのコンパイル (*.cpp)
 $(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d | $(OBJDIR)
-	@set -o pipefail; if echo $(TEST_TARGET_SRCS_CPP) | grep -q $(notdir $<); then \
+	@set -o pipefail; if echo $(TEST_SRCS) | grep -q $(notdir $<); then \
 		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 	else \
@@ -165,65 +153,26 @@ $(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d | $(OBJDIR)
 		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 	fi
 
-# テスト対象のソースファイルからシンボリックリンクを張る
-$(notdir $(TEST_TARGET_SRCS_C_WITHOUT_INJECT) $(LINK_SRCS_C)):
-	ln -s $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_C_WITHOUT_INJECT) $(LINK_SRCS_C) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
+# シンボリックリンク対象のソースファイルからシンボリックリンクを張る
+$(notdir $(LINK_SRCS)): $(LINK_SRCS)
+	ln -s $(shell realpath --relative-to=. $(shell echo $(LINK_SRCS) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
 #	.gitignore に対象ファイルを追加
 	echo $(notdir $@) >> .gitignore
 	@tempfile=$$(mktemp) && \
 	sort .gitignore | uniq > $$tempfile && \
 	mv $$tempfile .gitignore
 
-$(notdir $(TEST_TARGET_SRCS_CPP_WITHOUT_INJECT) $(LINK_SRCS_CPP)):
-	ln -s $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPP_WITHOUT_INJECT) $(LINK_SRCS_CPP) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
-#	.gitignore に対象ファイルを追加
-	echo $(notdir $@) >> .gitignore
-	@tempfile=$$(mktemp) && \
-	sort .gitignore | uniq > $$tempfile && \
-	mv $$tempfile .gitignore
-
-# テスト対象のソースファイルをコピーして
+# コピー対象のソースファイルをコピーして
 # (1) フィルター処理をする
 # (2) inject ファイルを結合する
-$(notdir $(TEST_TARGET_SRCS_C_WITH_INJECT)): $(TEST_TARGET_SRCS_C_WITH_INJECT)
+$(notdir $(CP_SRCS)): $(CP_SRCS)
 	@if [ -f "$(notdir $@).filter.sh" ]; then \
-		echo "cat $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_C_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) | sh $(notdir $@).filter.sh > $(notdir $@)"; \
-		cat $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_C_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) | sh $(notdir $@).filter.sh > $(notdir $@); \
-		diff $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_C_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) $(notdir $@); set $?=0; \
+		echo "cat $(shell realpath --relative-to=. $(shell echo $(CP_SRCS) | tr ' ' '\n' | awk '/$@/')) | sh $(notdir $@).filter.sh > $(notdir $@)"; \
+		cat $(shell realpath --relative-to=. $(shell echo $(CP_SRCS) | tr ' ' '\n' | awk '/$@/')) | sh $(notdir $@).filter.sh > $(notdir $@); \
+		diff $(shell realpath --relative-to=. $(shell echo $(CP_SRCS) | tr ' ' '\n' | awk '/$@/')) $(notdir $@); set $?=0; \
 	else \
-		echo "cp -p $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_C_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)"; \
-		cp -p $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_C_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) $(notdir $@); \
-	fi
-	@if [ -f "$(notdir $(basename $@)).inject$(suffix $@)" ]; then \
-		if [ "$$(tail -c 1 $(notdir $@) | od -An -tx1)" != " 0a" ]; then \
-			echo "echo \"\" >> $(notdir $@)"; \
-			echo "" >> $(notdir $@); \
-		fi; \
-		echo "echo \"\" >> $(notdir $@)"; \
-		echo "" >> $(notdir $@); \
-		echo "echo \"/* Inject from test framework */\" >> $(notdir $@)"; \
-		echo "/* Inject from test framework */" >> $(notdir $@); \
-		echo "echo \"#ifdef _IN_TEST_FRAMEWORK_\" >> $(notdir $@)"; \
-		echo "#ifdef _IN_TEST_FRAMEWORK_" >> $(notdir $@); \
-		echo "echo \"#include \"$(basename $(notdir $@)).inject$(suffix $(notdir $@))\"\" >> $(notdir $@)"; \
-		echo "#include \"$(basename $(notdir $@)).inject$(suffix $(notdir $@))\"" >> $(notdir $@); \
-		echo "echo \"#endif // _IN_TEST_FRAMEWORK_\" >> $(notdir $@)"; \
-		echo "#endif // _IN_TEST_FRAMEWORK_" >> $(notdir $@); \
-	fi
-#	.gitignore に対象ファイルを追加
-	echo $(notdir $@) >> .gitignore
-	@tempfile=$$(mktemp) && \
-	sort .gitignore | uniq > $$tempfile && \
-	mv $$tempfile .gitignore
-
-$(notdir $(TEST_TARGET_SRCS_CPP_WITH_INJECT)): $(TEST_TARGET_SRCS_CPP_WITH_INJECT)
-	@if [ -f "$(notdir $@).filter.sh" ]; then \
-		echo "cat $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPP_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) | sh $(notdir $@).filter.sh > $(notdir $@)"; \
-		cat $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPP_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) | sh $(notdir $@).filter.sh > $(notdir $@); \
-		diff $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPP_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) $(notdir $@); set $?=0; \
-	else \
-		echo "cp -p $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPP_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)"; \
-		cp -p $(shell realpath --relative-to=. $(shell echo $(TEST_TARGET_SRCS_CPP_WITH_INJECT) | tr ' ' '\n' | awk '/$@/')) $(notdir $@); \
+		echo "cp -p $(shell realpath --relative-to=. $(shell echo $(CP_SRCS) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)"; \
+		cp -p $(shell realpath --relative-to=. $(shell echo $(CP_SRCS) | tr ' ' '\n' | awk '/$@/')) $(notdir $@); \
 	fi
 	@if [ -f "$(notdir $(basename $@)).inject$(suffix $@)" ]; then \
 		if [ "$$(tail -c 1 $(notdir $@) | od -An -tx1)" != " 0a" ]; then \
@@ -275,14 +224,14 @@ endif
 
 .PHONY: clean
 clean: clean-cov
-#   テスト対象から張ったシンボリックリンクを削除する
-	-@if [ -n "$(wildcard $(notdir $(TEST_TARGET_SRCS_C_WITH_INJECT) $(TEST_TARGET_SRCS_C_WITHOUT_INJECT) $(LINK_SRCS_C)))" ] || [ -n "$(wildcard $(notdir $(TEST_TARGET_SRCS_CPP_WITH_INJECT) $(TEST_TARGET_SRCS_CPP_WITHOUT_INJECT) $(LINK_SRCS_CPP)))" ]; then \
-		echo rm -f $(notdir $(TEST_TARGET_SRCS_C_WITH_INJECT) $(TEST_TARGET_SRCS_C_WITHOUT_INJECT) $(LINK_SRCS_C)) $(notdir $(TEST_TARGET_SRCS_CPP_WITH_INJECT) $(TEST_TARGET_SRCS_CPP_WITHOUT_INJECT) $(LINK_SRCS_CPP)); \
-		rm -f $(notdir $(TEST_TARGET_SRCS_C_WITH_INJECT) $(TEST_TARGET_SRCS_C_WITHOUT_INJECT) $(LINK_SRCS_C)) $(notdir $(TEST_TARGET_SRCS_CPP_WITH_INJECT) $(TEST_TARGET_SRCS_CPP_WITHOUT_INJECT) $(LINK_SRCS_CPP)); \
+#   シンボリックリンクされたソース、コピー対象のソースを削除する
+	-@if [ -n "$(wildcard $(notdir $(CP_SRCS) $(LINK_SRCS)))" ]; then \
+		echo rm -f $(notdir $(CP_SRCS) $(LINK_SRCS)); \
+		rm -f $(notdir $(CP_SRCS) $(LINK_SRCS)); \
 	fi
 # .gitignore の再生成 (コミット差分が出ないように)
 	-rm -f .gitignore
-	@for ignorefile in $(notdir $(TEST_TARGET_SRCS_C_WITH_INJECT) $(TEST_TARGET_SRCS_C_WITHOUT_INJECT) $(LINK_SRCS_C)) $(notdir $(TEST_TARGET_SRCS_CPP_WITH_INJECT) $(TEST_TARGET_SRCS_CPP_WITHOUT_INJECT) $(LINK_SRCS_CPP)); \
+	@for ignorefile in $(notdir $(CP_SRCS) $(LINK_SRCS)); \
 		do echo $$ignorefile >> .gitignore; \
 		tempfile=$$(mktemp) && \
 		sort .gitignore | uniq > $$tempfile && \
@@ -303,7 +252,7 @@ clean-cov:
 take-cov: take-gcov take-lcov
 
 # Check if both variables are empty
-ifneq ($(strip $(TEST_TARGET_SRCS_C) $(TEST_TARGET_SRCS_CPP)),)
+ifneq ($(strip $(TEST_SRCS)),)
 
 .PHONY: take-gcov
 take-gcov: $(GCOVDIR)
@@ -311,8 +260,8 @@ take-gcov: $(GCOVDIR)
 	-rm -rf $(GCOVDIR)/*
 #	gcov でカバレッジ情報を取得する
 #	-bc オプションは可読性に問題があるので、使用しない (lcov の結果で確認可能)
-#	gcov -bc $(TEST_TARGET_SRCS_C) $(TEST_TARGET_SRCS_CPP) -o $(OBJDIR)
-	gcov $(TEST_TARGET_SRCS_C) $(TEST_TARGET_SRCS_CPP) -o $(OBJDIR)
+#	gcov -bc $(TEST_SRCS) -o $(OBJDIR)
+	gcov $(TEST_SRCS) -o $(OBJDIR)
 #	カバレッジ未通過の *.gcov ファイルは削除する
 	@if [ -n "$$(ls *.gcov 2>/dev/null)" ]; then \
 		for file in *.gcov; do \

@@ -12,9 +12,8 @@ WORKSPACE_FOLDER := $(shell \
 
 # テスト対象のソースファイル
 # ※ prod 配下ではなく、ここに直接テスト対象を配置する例
-TEST_TARGET_SRCS_C := \
+TEST_SRCS := \
 	testterget.c
-TEST_TARGET_SRCS_CPP :=
 
 # ライブラリの指定
 LIBS := -lmocklibc -lmocksample -ltestcom

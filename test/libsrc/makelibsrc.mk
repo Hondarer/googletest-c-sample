@@ -16,9 +16,27 @@ ifeq ($(TARGET),)
 	TARGET := lib$(shell basename `pwd`).a
 endif
 
+# 【コンパイルオプションの観点】
+# ・フォルダ外の追加ソースファイル								: ADD_SRCS	外から指定							OK
+# ・その他のソースファイル
+#   - 上記以外のカレントディレクトリに置かれているソースファイル
+#
+# 【ソース生成の観点】
+# ・シンボリックリンクが必要というソースファイル				: LINK_SRCS										OK
+#   - inject ファイル および フィルタファイルがない
+# ・コピーが必要というソースファイル							: CP_SRCS										OK
+#   - inject ファイル または フィルタファイルがある
+
+# inject, filter 判定
+CP_SRCS :=  $(foreach src,$(ADD_SRCS), \
+	$(if $(or $(wildcard $(notdir $(basename $(src))).inject$(suffix $(src))), \
+		$(wildcard $(notdir $(src)).filter.sh)), \
+		$(src)))
+LINK_SRCS := $(filter-out $(CP_SRCS),$(ADD_SRCS))
+
 # コンパイル対象のソースファイル (カレントディレクトリから自動収集)
-SRCS_C := $(wildcard *.c)
-SRCS_CPP := $(wildcard *.cc) $(wildcard *.cpp)
+SRCS_C := $(wildcard *.c) $(filter %.c,$(CP_SRCS) $(LINK_SRCS))
+SRCS_CPP := $(wildcard *.cc) $(wildcard *.cpp) $(filter %.cc,$(CP_SRCS) $(LINK_SRCS)) $(filter %.cpp,$(CP_SRCS) $(LINK_SRCS))
 
 # c_cpp_properties.json から include ディレクトリを得る
 INCDIR := $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_include_paths.sh)
@@ -49,8 +67,13 @@ CPPCOMFLAGS += -D$(subst -,_,$(shell echo $(notdir $(WORKSPACE_FOLDER)) | tr '[:
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
 CFLAGS := $(CCOMFLAGS) $(addprefix -I, $(INCDIR))
 CPPFLAGS := $(CPPCOMFLAGS) $(addprefix -I, $(INCDIR))
-OBJS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.o) $(LINK_SRCS_C:.c=.o) $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(SRCS_CPP) $(LINK_SRCS_CPP))))))
-DEPS := $(sort $(addprefix $(OBJDIR)/, $(notdir $(SRCS_C:.c=.d) $(LINK_SRCS_C:.c=.d) $(patsubst %.cc, %.d, $(patsubst %.cpp, %.d, $(SRCS_CPP) $(LINK_SRCS_CPP))))))
+
+# OBJS
+OBJS := $(filter-out $(OBJDIR)/%.inject.o, \
+    $(sort $(addprefix $(OBJDIR)/, \
+    $(notdir $(patsubst %.c, %.o, $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(SRCS_C) $(SRCS_CPP))))))))
+# DEPS
+DEPS := $(patsubst %.o, %.d, $(OBJS))
 
 # アーカイブの生成
 $(TARGETDIR)/$(TARGET): $(OBJS) | $(TARGETDIR)
@@ -69,15 +92,42 @@ $(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d | $(OBJDIR) $(TARGETDIR)
 	set -o pipefail; LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf
 
 # シンボリックリンク対象のソースファイルからシンボリックリンクを張る
-$(notdir $(LINK_SRCS_C)):
-	ln -s $(shell realpath --relative-to=. $(shell echo $(LINK_SRCS_C) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
+$(notdir $(LINK_SRCS)): $(LINK_SRCS)
+	ln -s $(shell realpath --relative-to=. $(shell echo $(LINK_SRCS) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
 #	.gitignore に対象ファイルを追加
 	echo $(notdir $@) >> .gitignore
 	@tempfile=$$(mktemp) && \
 	sort .gitignore | uniq > $$tempfile && \
 	mv $$tempfile .gitignore
-$(notdir $(LINK_SRCS_CPP)):
-	ln -s $(shell realpath --relative-to=. $(shell echo $(LINK_SRCS_CPP) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)
+
+# コピー対象のソースファイルをコピーして
+# (1) フィルター処理をする
+# (2) inject ファイルを結合する
+$(notdir $(CP_SRCS)): $(CP_SRCS)
+	@if [ -f "$(notdir $@).filter.sh" ]; then \
+		echo "cat $(shell realpath --relative-to=. $(shell echo $(CP_SRCS) | tr ' ' '\n' | awk '/$@/')) | sh $(notdir $@).filter.sh > $(notdir $@)"; \
+		cat $(shell realpath --relative-to=. $(shell echo $(CP_SRCS) | tr ' ' '\n' | awk '/$@/')) | sh $(notdir $@).filter.sh > $(notdir $@); \
+		diff $(shell realpath --relative-to=. $(shell echo $(CP_SRCS) | tr ' ' '\n' | awk '/$@/')) $(notdir $@); set $?=0; \
+	else \
+		echo "cp -p $(shell realpath --relative-to=. $(shell echo $(CP_SRCS) | tr ' ' '\n' | awk '/$@/')) $(notdir $@)"; \
+		cp -p $(shell realpath --relative-to=. $(shell echo $(CP_SRCS) | tr ' ' '\n' | awk '/$@/')) $(notdir $@); \
+	fi
+	@if [ -f "$(notdir $(basename $@)).inject$(suffix $@)" ]; then \
+		if [ "$$(tail -c 1 $(notdir $@) | od -An -tx1)" != " 0a" ]; then \
+			echo "echo \"\" >> $(notdir $@)"; \
+			echo "" >> $(notdir $@); \
+		fi; \
+		echo "echo \"\" >> $(notdir $@)"; \
+		echo "" >> $(notdir $@); \
+		echo "echo \"/* Inject from test framework */\" >> $(notdir $@)"; \
+		echo "/* Inject from test framework */" >> $(notdir $@); \
+		echo "echo \"#ifdef _IN_TEST_FRAMEWORK_\" >> $(notdir $@)"; \
+		echo "#ifdef _IN_TEST_FRAMEWORK_" >> $(notdir $@); \
+		echo "echo \"#include \"$(basename $(notdir $@)).inject$(suffix $(notdir $@))\"\" >> $(notdir $@)"; \
+		echo "#include \"$(basename $(notdir $@)).inject$(suffix $(notdir $@))\"" >> $(notdir $@); \
+		echo "echo \"#endif // _IN_TEST_FRAMEWORK_\" >> $(notdir $@)"; \
+		echo "#endif // _IN_TEST_FRAMEWORK_" >> $(notdir $@); \
+	fi
 #	.gitignore に対象ファイルを追加
 	echo $(notdir $@) >> .gitignore
 	@tempfile=$$(mktemp) && \
@@ -107,14 +157,14 @@ clean:
 		done; \
 		ar tv $(TARGETDIR)/$(TARGET); \
     fi
-#   シンボリックリンク対象から張ったシンボリックリンクを削除する
-	-@if [ -n "$(wildcard $(notdir $(LINK_SRCS_C)))" ] || [ -n "$(wildcard $(notdir $(LINK_SRCS_CPP)))" ]; then \
-		echo rm -f $(notdir $(LINK_SRCS_C)) $(notdir $(LINK_SRCS_CPP)); \
-		rm -f $(notdir $(LINK_SRCS_C)) $(notdir $(LINK_SRCS_CPP)); \
+#   シンボリックリンクされたソース、コピー対象のソースを削除する
+	-@if [ -n "$(wildcard $(notdir $(CP_SRCS) $(LINK_SRCS)))" ]; then \
+		echo rm -f $(notdir $(CP_SRCS) $(LINK_SRCS)); \
+		rm -f $(notdir $(CP_SRCS) $(LINK_SRCS)); \
 	fi
 # .gitignore の再生成 (コミット差分が出ないように)
 	-rm -f .gitignore
-	@for ignorefile in $(notdir $(LINK_SRCS_C)) $(notdir $(LINK_SRCS_CPP)); \
+	@for ignorefile in $(notdir $(CP_SRCS) $(LINK_SRCS)); \
 		do echo $$ignorefile >> .gitignore; \
 		tempfile=$$(mktemp) && \
 		sort .gitignore | uniq > $$tempfile && \
