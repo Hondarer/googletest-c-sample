@@ -243,7 +243,7 @@ function main() {
     fi
 
     echo "" | tee -a results/all_tests/summary.log
-    make --no-print-directory take-gcovr 2>&1 | grep -v "(INFO)" | grep -v "Directory:" | tee -a results/all_tests/summary.log
+    make --no-print-directory take-gcovr 2>&1 | grep -v "include " | grep -v "(INFO)" | grep -v "Directory:" | tee -a results/all_tests/summary.log
 
     if [ $FAILURE_COUNT -eq 0 ]; then
         if [ $WARNING_COUNT -eq 0 ]; then

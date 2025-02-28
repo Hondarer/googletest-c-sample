@@ -68,3 +68,6 @@ CPPCOMFLAGS=\
 	-Wformat-overflow=0 \
 	-Wunknown-pragmas \
 	-W
+
+LDCOMFLAGS  =
+LIBSDIR     =

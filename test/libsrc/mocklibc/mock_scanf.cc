@@ -14,7 +14,6 @@ int delegate_real_scanf(const char * format, va_list arg_ptr)
 int mock_scanf(const char *fmt, ...)
 {
     va_list args;
-    char *str;
     int rtc;
 
     // 可変引数リストを初期化

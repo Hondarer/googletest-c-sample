@@ -10,8 +10,8 @@ WORKSPACE_FOLDER := $(shell \
     done \
 )
 
-# 直近の makeflags.mk を探索
-include $(WORKSPACE_FOLDER)/test/include_flags.mk
+# 親階層から makeflags.mk を探索して順次 include
+include $(WORKSPACE_FOLDER)/test/include_makeflags.mk
 
 # libsrc の Makefile テンプレートをインクルード
 include $(WORKSPACE_FOLDER)/test/libsrc/makelibsrc.mk

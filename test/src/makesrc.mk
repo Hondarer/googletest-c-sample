@@ -57,7 +57,7 @@ SRCS_CPP := $(wildcard *.cc) $(wildcard *.cpp) $(filter %.cc,$(CP_SRCS) $(LINK_S
 INCDIR := $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_include_paths.sh)
 
 # 外部で LIBSDIR が指定されている場合は維持して結合
-LIBSDIR += \
+LIBSDIR := $(LIBSDIR) \
 	$(WORKSPACE_FOLDER)/test/lib
 
 LIBSFILES := $(shell for dir in $(LIBSDIR); do find $$dir -maxdepth 1 -type f; done)
@@ -93,9 +93,9 @@ ifeq ($(findstring -g,$(CPPCOMFLAGS)),)
   CPPCOMFLAGS += -g
 endif
 
-# ワークスペース名を -D に追加する
-CCOMFLAGS += -D$(subst -,_,$(shell echo $(notdir $(WORKSPACE_FOLDER)) | tr '[:lower:]' '[:upper:]'))
-CPPCOMFLAGS += -D$(subst -,_,$(shell echo $(notdir $(WORKSPACE_FOLDER)) | tr '[:lower:]' '[:upper:]'))
+# c_cpp_properties.json の defines にある値を -D として追加する
+CCOMFLAGS += $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_defines.sh)
+CPPCOMFLAGS += $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_defines.sh)
 
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
 
@@ -256,11 +256,11 @@ clean-cov:
 	-rm -rf $(GCOVDIR)
 	-rm -rf $(LCOVDIR)
 
-.PHONY: take-cov
-take-cov: take-gcov take-lcov take-gcovr
-
 # Check if both variables are empty
 ifneq ($(strip $(TEST_SRCS)),)
+
+.PHONY: take-cov
+take-cov: take-gcov take-lcov take-gcovr
 
 .PHONY: take-gcovr
 take-gcovr:
@@ -312,16 +312,20 @@ take-lcov: $(LCOVDIR)
 
 else
 
+.PHONY: take-cov
+take-cov:
+	@echo "No target source files for coverage measurement."
+
 .PHONY: take-gcovr
 take-gcovr:
 	@echo "No target source files for coverage measurement."
 
 .PHONY: take-gcov
-take-gcov: $(GCOVDIR)
+take-gcov:
 	@echo "No target source files for coverage measurement."
 
 .PHONY: take-lcov
-take-lcov: $(LCOVDIR)
+take-lcov:
 	@echo "No target source files for coverage measurement."
 
 endif

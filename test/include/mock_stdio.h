@@ -40,7 +40,7 @@ extern int delegate_real_fclose(FILE *);
 extern int delegate_real_fflush(FILE *);
 extern FILE *delegate_real_fopen(const char *, const char *);
 extern int delegate_real_fprintf(FILE *, const char *);
-extern int delegate_real_scanf(const char *, va_list);
+extern int delegate_real_scanf(const char *, va_list) __attribute__((format(scanf, 1, 0)));
 
 class Mock_stdio
 {

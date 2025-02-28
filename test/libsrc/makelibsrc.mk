@@ -64,9 +64,9 @@ ifeq ($(findstring -g,$(CPPCOMFLAGS)),)
   CPPCOMFLAGS += -g
 endif
 
-# ワークスペース名を -D に追加する
-CCOMFLAGS += -D$(subst -,_,$(shell echo $(notdir $(WORKSPACE_FOLDER)) | tr '[:lower:]' '[:upper:]'))
-CPPCOMFLAGS += -D$(subst -,_,$(shell echo $(notdir $(WORKSPACE_FOLDER)) | tr '[:lower:]' '[:upper:]'))
+# c_cpp_properties.json の defines にある値を -D として追加する
+CCOMFLAGS += $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_defines.sh)
+CPPCOMFLAGS += $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_defines.sh)
 
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
 CFLAGS := $(CCOMFLAGS) $(addprefix -I, $(INCDIR))
@@ -162,7 +162,7 @@ clean:
 			echo ar d $(TARGETDIR)/$(TARGET) $$(basename $$obj); \
 			ar d $(TARGETDIR)/$(TARGET) $$(basename $$obj); \
 		done; \
-    fi
+	fi
 #   シンボリックリンクされたソース、コピー対象のソースを削除する
 	-@if [ -n "$(wildcard $(notdir $(CP_SRCS) $(LINK_SRCS)))" ]; then \
 		echo rm -f $(notdir $(CP_SRCS) $(LINK_SRCS)); \
