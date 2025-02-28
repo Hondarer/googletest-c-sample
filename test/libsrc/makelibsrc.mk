@@ -1,27 +1,14 @@
 SHELL := /bin/bash
 
-# ソースファイルのエンコード指定から LANG を得る
-FILES_LANG := $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_files_lang.sh $(WORKSPACE_FOLDER))
-
-# アーカイブのディレクトリ名とアーカイブ名
-# TARGETDIR := . の場合、カレントディレクトリに実行体を生成する
-ifeq ($(TARGETDIR),)
-	TARGETDIR := $(WORKSPACE_FOLDER)/test/lib
-endif
-# ディレクトリ名をアーカイブ名にする
-ifeq ($(TARGET),)
-	TARGET := lib$(shell basename `pwd`).a
-endif
-
 # 【コンパイルオプションの観点】
-# ・フォルダ外の追加ソースファイル								: ADD_SRCS	外から指定							OK
+# ・フォルダ外の追加ソースファイル								: ADD_SRCS		外から指定
 # ・その他のソースファイル
 #   - 上記以外のカレントディレクトリに置かれているソースファイル
 #
 # 【ソース生成の観点】
-# ・シンボリックリンクが必要というソースファイル				: LINK_SRCS										OK
+# ・シンボリックリンクが必要というソースファイル				: LINK_SRCS
 #   - inject ファイル および フィルタファイルがない
-# ・コピーが必要というソースファイル							: CP_SRCS										OK
+# ・コピーが必要というソースファイル							: CP_SRCS
 #   - inject ファイル または フィルタファイルがある
 # ・直接配置のソースファイル									: DIRECT_SRCS
 #   - ADD_SRCS に指定されていて、カレントディレクトリに配置されているもの
@@ -58,15 +45,16 @@ CPP := g++
 
 # -g が含まれていない場合に追加
 ifeq ($(findstring -g,$(CCOMFLAGS)),)
-  CCOMFLAGS += -g
+	CCOMFLAGS += -g
 endif
 ifeq ($(findstring -g,$(CPPCOMFLAGS)),)
-  CPPCOMFLAGS += -g
+	CPPCOMFLAGS += -g
 endif
 
 # c_cpp_properties.json の defines にある値を -D として追加する
-CCOMFLAGS += $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_defines.sh)
-CPPCOMFLAGS += $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_defines.sh)
+# DEFINES は prepare.mk で設定されている
+CCOMFLAGS += $(addprefix -D,$(DEFINES))
+CPPCOMFLAGS += $(addprefix -D,$(DEFINES))
 
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
 CFLAGS := $(CCOMFLAGS) $(addprefix -I, $(INCDIR))
@@ -74,10 +62,20 @@ CPPFLAGS := $(CPPCOMFLAGS) $(addprefix -I, $(INCDIR))
 
 # OBJS
 OBJS := $(filter-out $(OBJDIR)/%.inject.o, \
-    $(sort $(addprefix $(OBJDIR)/, \
-    $(notdir $(patsubst %.c, %.o, $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(SRCS_C) $(SRCS_CPP))))))))
+	$(sort $(addprefix $(OBJDIR)/, \
+	$(notdir $(patsubst %.c, %.o, $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(SRCS_C) $(SRCS_CPP))))))))
 # DEPS
 DEPS := $(patsubst %.o, %.d, $(OBJS))
+
+# アーカイブのディレクトリ名とアーカイブ名
+# TARGETDIR := . の場合、カレントディレクトリに実行体を生成する
+ifeq ($(TARGETDIR),)
+	TARGETDIR := $(WORKSPACE_FOLDER)/test/lib
+endif
+# ディレクトリ名をアーカイブ名にする
+ifeq ($(TARGET),)
+	TARGET := lib$(shell basename `pwd`).a
+endif
 
 # アーカイブの生成
 $(TARGETDIR)/$(TARGET): $(OBJS) | $(TARGETDIR)
@@ -106,8 +104,8 @@ $(notdir $(LINK_SRCS)):
 	mv $$tempfile .gitignore
 
 # コピー対象のソースファイルをコピーして
-# (1) フィルター処理をする
-# (2) inject ファイルを結合する
+# 1. フィルター処理をする
+# 2. inject 処理をする
 $(notdir $(CP_SRCS)): $(CP_SRCS)
 #	CP_SRCS の notdir を引数に、CP_SRCS に存在するフルパスを得る
 	@CP_SRC=$(shell printf '%s\n' $(CP_SRCS) | awk '{ notdir=$$0; sub(".*/", "", notdir); if (notdir == "$@") { print $$0 }}'); \
@@ -168,7 +166,7 @@ clean:
 		echo rm -f $(notdir $(CP_SRCS) $(LINK_SRCS)); \
 		rm -f $(notdir $(CP_SRCS) $(LINK_SRCS)); \
 	fi
-# .gitignore の再生成 (コミット差分が出ないように)
+#	.gitignore の再生成 (コミット差分が出ないように)
 	-rm -f .gitignore
 	@for ignorefile in $(notdir $(CP_SRCS) $(LINK_SRCS)); \
 		do echo $$ignorefile >> .gitignore; \

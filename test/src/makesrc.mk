@@ -1,24 +1,11 @@
 SHELL := /bin/bash
 
-# ソースファイルのエンコード指定から LANG を得る
-FILES_LANG := $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_files_lang.sh)
-
-# テストプログラムのディレクトリ名と実行体名
-# TARGETDIR := . の場合、カレントディレクトリに実行体を生成する
-ifeq ($(TARGETDIR),)
-	TARGETDIR := .
-endif
-# ディレクトリ名を実行体名にする
-ifeq ($(TARGET),)
-	TARGET := $(shell basename `pwd`)
-endif
-
 # 【コンパイルの観点】
 # ・C のソース													: SRCS_C
 # ・C++ のソース												: SRCS_CPP
 # 【コンパイルオプションの観点】
-# ・テストの対象 (カバレッジ対象) のソースファイル				: TEST_SRCS	外から指定
-# ・フォルダ外の追加ソースファイル								: ADD_SRCS	外から指定
+# ・テストの対象 (カバレッジ対象) のソースファイル				: TEST_SRCS		外から指定
+# ・フォルダ外の追加ソースファイル								: ADD_SRCS		外から指定
 # ・その他のソースファイル
 #   - 上記以外のカレントディレクトリに置かれているソースファイル
 #
@@ -87,15 +74,16 @@ LD := g++
 
 # -g が含まれていない場合に追加
 ifeq ($(findstring -g,$(CCOMFLAGS)),)
-  CCOMFLAGS += -g
+	CCOMFLAGS += -g
 endif
 ifeq ($(findstring -g,$(CPPCOMFLAGS)),)
-  CPPCOMFLAGS += -g
+	CPPCOMFLAGS += -g
 endif
 
 # c_cpp_properties.json の defines にある値を -D として追加する
-CCOMFLAGS += $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_defines.sh)
-CPPCOMFLAGS += $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_defines.sh)
+# DEFINES は prepare.mk で設定されている
+CCOMFLAGS += $(addprefix -D,$(DEFINES))
+CPPCOMFLAGS += $(addprefix -D,$(DEFINES))
 
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJDIR)/$*.d
 
@@ -114,10 +102,20 @@ LDFLAGS := $(LDCOMFLAGS) $(addprefix -L, $(LIBSDIR))
 
 # OBJS
 OBJS := $(filter-out $(OBJDIR)/%.inject.o, \
-    $(sort $(addprefix $(OBJDIR)/, \
-    $(notdir $(patsubst %.c, %.o, $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(SRCS_C) $(SRCS_CPP))))))))
+	$(sort $(addprefix $(OBJDIR)/, \
+	$(notdir $(patsubst %.c, %.o, $(patsubst %.cc, %.o, $(patsubst %.cpp, %.o, $(SRCS_C) $(SRCS_CPP))))))))
 # DEPS
 DEPS := $(patsubst %.o, %.d, $(OBJS))
+
+# テストプログラムのディレクトリ名と実行体名
+# TARGETDIR := . の場合、カレントディレクトリに実行体を生成する
+ifeq ($(TARGETDIR),)
+	TARGETDIR := .
+endif
+# ディレクトリ名を実行体名にする
+ifeq ($(TARGET),)
+	TARGET := $(shell basename `pwd`)
+endif
 
 ifndef NO_LINK
 # 実行体の生成
@@ -169,8 +167,8 @@ $(notdir $(LINK_SRCS)):
 	mv $$tempfile .gitignore
 
 # コピー対象のソースファイルをコピーして
-# (1) フィルター処理をする
-# (2) inject ファイルを結合する
+# 1. フィルター処理をする
+# 2. inject 処理をする
 $(notdir $(CP_SRCS)): $(CP_SRCS)
 #	CP_SRCS の notdir を引数に、CP_SRCS に存在するフルパスを得る
 	@CP_SRC=$(shell printf '%s\n' $(CP_SRCS) | awk '{ notdir=$$0; sub(".*/", "", notdir); if (notdir == "$@") { print $$0 }}'); \
@@ -237,7 +235,7 @@ clean: clean-cov
 		echo rm -f $(notdir $(CP_SRCS) $(LINK_SRCS)); \
 		rm -f $(notdir $(CP_SRCS) $(LINK_SRCS)); \
 	fi
-# .gitignore の再生成 (コミット差分が出ないように)
+#	.gitignore の再生成 (コミット差分が出ないように)
 	-rm -f .gitignore
 	@for ignorefile in $(notdir $(CP_SRCS) $(LINK_SRCS)); \
 		do echo $$ignorefile >> .gitignore; \

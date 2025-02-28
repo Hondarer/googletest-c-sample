@@ -10,8 +10,8 @@ WORKSPACE_FOLDER := $(shell \
     done \
 )
 
-# 親階層から makeflags.mk を探索して順次 include
-include $(WORKSPACE_FOLDER)/test/include_makeflags.mk
+# 準備処理 (Makefile テンプレートより前に include)
+include $(WORKSPACE_FOLDER)/test/prepare.mk
 
 # テスト対象のソースファイル
 TEST_SRCS := \
@@ -20,5 +20,5 @@ TEST_SRCS := \
 # ライブラリの追加
 LIBS += -lmocklibc -lmocksample -ltestcom
 
-# src の Makefile テンプレートをインクルード
+# src の Makefile テンプレートを include
 include $(WORKSPACE_FOLDER)/test/src/makesrc.mk
