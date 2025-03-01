@@ -42,6 +42,9 @@ CP_SRCS += $(foreach f, $(LINK_SRCS), \
 	$(if $(findstring .filter.sh,$(notdir $(f))), \
 		$(foreach src, $(filter %$(subst .filter.sh,,$(notdir $(f))), $(LINK_SRCS)), $(src))))
 
+# CP_SRCS の重複排除
+CP_SRCS := $(sort $(CP_SRCS))
+
 # LINK_SRCS から CP_SRCS のファイルを削除
 LINK_SRCS := $(filter-out $(CP_SRCS), $(LINK_SRCS))
 

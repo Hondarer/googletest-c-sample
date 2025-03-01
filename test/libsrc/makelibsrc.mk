@@ -38,6 +38,9 @@ CP_SRCS += $(foreach f, $(LINK_SRCS), \
 	$(if $(findstring .filter.sh,$(notdir $(f))), \
 		$(foreach src, $(filter %$(subst .filter.sh,,$(notdir $(f))), $(LINK_SRCS)), $(src))))
 
+# CP_SRCS の重複排除
+CP_SRCS := $(sort $(CP_SRCS))
+
 # LINK_SRCS から CP_SRCS のファイルを削除
 LINK_SRCS := $(filter-out $(CP_SRCS), $(LINK_SRCS))
 
@@ -182,12 +185,13 @@ all: clean $(TARGETDIR)/$(TARGET)
 
 .PHONY: clean
 clean:
-	@if [ -f $(TARGETDIR)/$(TARGET) ]; then \
-		for obj in $(OBJS); do \
-			echo ar d $(TARGETDIR)/$(TARGET) $$(basename $$obj); \
-			ar d $(TARGETDIR)/$(TARGET) $$(basename $$obj); \
-		done; \
-	fi
+#	@if [ -f $(TARGETDIR)/$(TARGET) ]; then \
+#		for obj in $(OBJS); do \
+#			echo ar d $(TARGETDIR)/$(TARGET) $$(basename $$obj); \
+#			ar d $(TARGETDIR)/$(TARGET) $$(basename $$obj); \
+#		done; \
+#	fi
+	-rm -f $(TARGETDIR)/$(TARGET)
 #   シンボリックリンクされたソース、コピー対象のソースを削除する
 	-@if [ -n "$(wildcard $(notdir $(CP_SRCS) $(LINK_SRCS)))" ]; then \
 		echo rm -f $(notdir $(CP_SRCS) $(LINK_SRCS)); \
