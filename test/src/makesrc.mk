@@ -169,38 +169,41 @@ $(notdir $(LINK_SRCS)):
 # コピー対象のソースファイルをコピーして
 # 1. フィルター処理をする
 # 2. inject 処理をする
-$(notdir $(CP_SRCS)): $(CP_SRCS)
-#	CP_SRCS の notdir を引数に、CP_SRCS に存在するフルパスを得る
-	@CP_SRC=$(shell printf '%s\n' $(CP_SRCS) | awk '{ notdir=$$0; sub(".*/", "", notdir); if (notdir == "$@") { print $$0 }}'); \
-	if [ -f "$@.filter.sh" ]; then \
-		echo "cat $$CP_SRC | sh $@.filter.sh > $@"; \
-		cat $$CP_SRC | sh $@.filter.sh > $@; \
-		diff $$CP_SRC $@; set $?=0; \
+define generate_cp_src_rule
+$(1): $(2) $(wildcard $(1).filter.sh) $(wildcard $(basename $(1)).inject$(suffix $(1))) 
+	@if [ -f "$(1).filter.sh" ]; then \
+		echo "cat $(2) | sh $(1).filter.sh > $(1)"; \
+		cat $(2) | sh $(1).filter.sh > $(1); \
+		diff $(2) $(1); set $?=0; \
 	else \
-		echo "cp -p $$CP_SRC $@"; \
-		cp -p $$CP_SRC $@; \
+		echo "cp -p $(2) $(1)"; \
+		cp -p $(2) $(1); \
 	fi
-	@if [ -f "$(notdir $(basename $@)).inject$(suffix $@)" ]; then \
-		if [ "$$(tail -c 1 $@ | od -An -tx1)" != " 0a" ]; then \
-			echo "echo \"\" >> $@"; \
-			echo "" >> $@; \
+	@if [ -f "$(basename $(1)).inject$(suffix $(1))" ]; then \
+		if [ "$$(tail -c 1 $(1) | od -An -tx1)" != " 0a" ]; then \
+			echo "echo \"\" >> $(1)"; \
+			echo "" >> $(1); \
 		fi; \
-		echo "echo \"\" >> $@"; \
-		echo "" >> $@; \
-		echo "echo \"/* Inject from test framework */\" >> $@"; \
-		echo "/* Inject from test framework */" >> $@; \
-		echo "echo \"#ifdef _IN_TEST_FRAMEWORK_\" >> $@"; \
-		echo "#ifdef _IN_TEST_FRAMEWORK_" >> $@; \
-		echo "echo \"#include \"$(basename $@).inject$(suffix $@)\"\" >> $@"; \
-		echo "#include \"$(basename $@).inject$(suffix $@)\"" >> $@; \
-		echo "echo \"#endif // _IN_TEST_FRAMEWORK_\" >> $@"; \
-		echo "#endif // _IN_TEST_FRAMEWORK_" >> $@; \
+		echo "echo \"\" >> $(1)"; \
+		echo "" >> $(1); \
+		echo "echo \"/* Inject from test framework */\" >> $(1)"; \
+		echo "/* Inject from test framework */" >> $(1); \
+		echo "echo \"#ifdef _IN_TEST_FRAMEWORK_\" >> $(1)"; \
+		echo "#ifdef _IN_TEST_FRAMEWORK_" >> $(1); \
+		echo "echo \"#include \"$(basename $(1)).inject$(suffix $(1))\"\" >> $(1)"; \
+		echo "#include \"$(basename $(1)).inject$(suffix $(1))\"" >> $(1); \
+		echo "echo \"#endif // _IN_TEST_FRAMEWORK_\" >> $(1)"; \
+		echo "#endif // _IN_TEST_FRAMEWORK_" >> $(1); \
 	fi
 #	.gitignore に対象ファイルを追加
-	echo $@ >> .gitignore
+	echo $(1) >> .gitignore
 	@tempfile=$$(mktemp) && \
 	sort .gitignore | uniq > $$tempfile && \
 	mv $$tempfile .gitignore
+endef
+
+# ファイルごとの依存関係を動的に定義
+$(foreach cp_src,$(CP_SRCS),$(eval $(call generate_cp_src_rule,$(notdir $(cp_src)),$(cp_src))))
 
 # The empty rule is required to handle the case where the dependency file is deleted.
 $(DEPS):
@@ -229,7 +232,7 @@ all: clean $(OBJS) $(LIBSFILES)
 endif
 
 .PHONY: clean
-clean: clean-cov
+clean: clean-cov clean-test
 #   シンボリックリンクされたソース、コピー対象のソースを削除する
 	-@if [ -n "$(wildcard $(notdir $(CP_SRCS) $(LINK_SRCS)))" ]; then \
 		echo rm -f $(notdir $(CP_SRCS) $(LINK_SRCS)); \
@@ -253,6 +256,10 @@ clean-cov:
 	-rm -rf $(OBJDIR)/*.info
 	-rm -rf $(GCOVDIR)
 	-rm -rf $(LCOVDIR)
+
+.PHONY: clean-test
+clean-test:
+	-rm -rf results
 
 # Check if both variables are empty
 ifneq ($(strip $(TEST_SRCS)),)

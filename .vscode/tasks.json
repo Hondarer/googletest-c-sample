@@ -21,6 +21,28 @@
             ]
         },
         {
+            "label": "make clean",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "clean"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "presentation": {
+                "reveal": "always", // Terminal パネルを必ず開く
+                "clear": true // 実行前に Terminal をクリア
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
             "label": "make all",
             "type": "shell",
             "command": "make",
@@ -97,6 +119,28 @@
             "group": {
                 "kind": "build",
                 "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always", // Terminal パネルを必ず開く
+                "clear": true // 実行前に Terminal をクリア
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "make clean (current dir)",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "clean"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false
             },
             "presentation": {
                 "reveal": "always", // Terminal パネルを必ず開く
