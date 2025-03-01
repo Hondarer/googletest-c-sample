@@ -147,7 +147,7 @@ $(OBJS): $(LIBSFILES)
 endif
 
 # C ソースファイルのコンパイル
-$(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR)
+$(OBJDIR)/%.o: %.c $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) | $(OBJDIR)
 	@set -o pipefail; if echo $(TEST_SRCS) | grep -q $(notdir $<); then \
 		echo LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 		LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
@@ -157,7 +157,7 @@ $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR)
 	fi
 
 # C++ ソースファイルのコンパイル (*.cc)
-$(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR)
+$(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) | $(OBJDIR)
 	@set -o pipefail; if echo $(TEST_SRCS) | grep -q $(notdir $<); then \
 		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
@@ -167,7 +167,7 @@ $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR)
 	fi
 
 # C++ ソースファイルのコンパイル (*.cpp)
-$(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d | $(OBJDIR)
+$(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) | $(OBJDIR)
 	@set -o pipefail; if echo $(TEST_SRCS) | grep -q $(notdir $<); then \
 		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \

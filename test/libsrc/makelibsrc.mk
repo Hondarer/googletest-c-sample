@@ -102,15 +102,15 @@ $(TARGETDIR)/$(TARGET): $(OBJS) | $(TARGETDIR)
 	ar rvs $@ $(OBJS)
 
 # C ソースファイルのコンパイル
-$(OBJDIR)/%.o: %.c $(OBJDIR)/%.d | $(OBJDIR) $(TARGETDIR)
+$(OBJDIR)/%.o: %.c $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) | $(OBJDIR) $(TARGETDIR)
 	set -o pipefail; LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf
 
 # C++ ソースファイルのコンパイル (*.cc)
-$(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d | $(OBJDIR) $(TARGETDIR)
+$(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) | $(OBJDIR) $(TARGETDIR)
 	set -o pipefail; LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf
 
 # C++ ソースファイルのコンパイル (*.cpp)
-$(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d | $(OBJDIR) $(TARGETDIR)
+$(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) | $(OBJDIR) $(TARGETDIR)
 	set -o pipefail; LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf
 
 # シンボリックリンク対象のソースファイルをシンボリックリンク
