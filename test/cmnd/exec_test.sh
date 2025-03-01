@@ -51,9 +51,9 @@ function run_test() {
     local temp_file=$(mktemp)
     local temp_exit_code=$(mktemp)
 
-    echo -e "\nRunning test: $test_id$test_comment_delim$test_comment"
+    echo -e "\nRunning test: $test_id$test_comment_delim$test_comment on $TEST_BINARY"
     tput cr
-    echo -e "Running test: $test_id$test_comment_delim$test_comment" > $temp_file
+    echo -e "Running test: $test_id$test_comment_delim$test_comment on $TEST_BINARY" > $temp_file
 
     # テストコードに着色する場合:
     # cat *.cc *.cpp 2>/dev/null | awk -v test_name=\"$test_name\" -f $SCRIPT_DIR/get_test_code.awk | source-highlight -s cpp -f esc;
@@ -172,7 +172,7 @@ function main() {
                 echo "" > $temp_file
             fi
 
-            echo -e "Running test: $test_id$test_comment_delim$test_comment" >> $temp_file
+            echo -e "Running test: $test_id$test_comment_delim$test_comment on $TEST_BINARY" >> $temp_file
 
             LANG=$FILES_LANG script -q -a -c \
                "echo \"----\"; \

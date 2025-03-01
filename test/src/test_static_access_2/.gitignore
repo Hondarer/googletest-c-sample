@@ -1,0 +1,4 @@
+samplestatic.c
+samplestatic.inject.c
+samplestatic.inject.h
+test_static_access.cc

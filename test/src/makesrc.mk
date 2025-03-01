@@ -18,7 +18,7 @@ SHELL := /bin/bash
 #   - TEST_SRCS, ADD_SRCS に指定されていて、カレントディレクトリに配置されているもの
 
 # inject, filter 判定
-CP_SRCS :=  $(foreach src,$(TEST_SRCS) $(ADD_SRCS), \
+CP_SRCS := $(foreach src,$(TEST_SRCS) $(ADD_SRCS), \
 	$(if $(or $(wildcard $(notdir $(basename $(src))).inject$(suffix $(src))), \
 		$(wildcard $(notdir $(src)).filter.sh)), \
 		$(src)))
@@ -28,6 +28,26 @@ DIRECT_SRCS := $(if $(filter-out $(CP_SRCS),$(TEST_SRCS) $(ADD_SRCS)),$(shell fo
 	fi; \
 	done))
 LINK_SRCS := $(filter-out $(CP_SRCS) $(DIRECT_SRCS),$(TEST_SRCS) $(ADD_SRCS))
+
+# 以下の処理は、ADD_SRCS に inject ファイルや filter ファイルを指定するための追加処理
+# make 開始時点でファイルが配置されていない場合は、CP_SRCS に正しく移動しきれないファイルがあるため
+
+# LINK_SRCS の中から `*.inject.*` に対応する元ファイルを探して CP_SRCS に追加
+CP_SRCS += $(foreach f, $(LINK_SRCS), \
+	$(if $(findstring .inject.,$(notdir $(f))), \
+		$(foreach src, $(filter %$(subst .inject.,.,$(notdir $(f))), $(LINK_SRCS)), $(src))))
+
+# LINK_SRCS の中から `*.filter.sh` に対応する元ファイルを探して CP_SRCS に追加
+CP_SRCS += $(foreach f, $(LINK_SRCS), \
+	$(if $(findstring .filter.sh,$(notdir $(f))), \
+		$(foreach src, $(filter %$(subst .filter.sh,,$(notdir $(f))), $(LINK_SRCS)), $(src))))
+
+# LINK_SRCS から CP_SRCS のファイルを削除
+LINK_SRCS := $(filter-out $(CP_SRCS), $(LINK_SRCS))
+
+#$(info CP_SRCS: $(CP_SRCS))
+#$(info DIRECT_SRCS: $(DIRECT_SRCS))
+#$(info LINK_SRCS: $(LINK_SRCS))
 
 # gcovr のフィルタを作成
 # gcovr では、シンボリックリンクの場合は、実パスを与える必要がある
@@ -156,21 +176,25 @@ $(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d | $(OBJDIR)
 		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 	fi
 
-# シンボリックリンク対象のソースファイルからシンボリックリンクを張る
-$(notdir $(LINK_SRCS)):
-#	LINK_SRCS の notdir を引数に、LINK_SRCS に存在するフルパスを得る
-	ln -s $(shell printf '%s\n' $(LINK_SRCS) | awk '{ notdir=$$0; sub(".*/", "", notdir); if (notdir == "$@") { print $$0 }}') $@
+# シンボリックリンク対象のソースファイルをシンボリックリンク
+define generate_link_src_rule
+$(1):
+	ln -s $(2) $(1)
 #	.gitignore に対象ファイルを追加
-	echo $@ >> .gitignore
+	echo $(1) >> .gitignore
 	@tempfile=$$(mktemp) && \
 	sort .gitignore | uniq > $$tempfile && \
 	mv $$tempfile .gitignore
+endef
+
+# ファイルごとの依存関係を動的に定義
+$(foreach link_src,$(LINK_SRCS),$(eval $(call generate_link_src_rule,$(notdir $(link_src)),$(link_src))))
 
 # コピー対象のソースファイルをコピーして
 # 1. フィルター処理をする
 # 2. inject 処理をする
 define generate_cp_src_rule
-$(1): $(2) $(wildcard $(1).filter.sh) $(wildcard $(basename $(1)).inject$(suffix $(1))) 
+$(1): $(2) $(wildcard $(1).filter.sh) $(wildcard $(basename $(1)).inject$(suffix $(1))) $(filter $(1).filter.sh,$(notdir $(LINK_SRCS))) $(filter $(basename $(1)).inject$(suffix $(1)),$(notdir $(LINK_SRCS)))
 	@if [ -f "$(1).filter.sh" ]; then \
 		echo "cat $(2) | sh $(1).filter.sh > $(1)"; \
 		cat $(2) | sh $(1).filter.sh > $(1); \
