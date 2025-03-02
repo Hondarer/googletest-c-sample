@@ -1,8 +1,5 @@
 SHELL := /bin/bash
 
-# 【コンパイルの観点】
-# ・C のソース													: SRCS_C
-# ・C++ のソース												: SRCS_CPP
 # 【コンパイルオプションの観点】
 # ・テストの対象 (カバレッジ対象) のソースファイル				: TEST_SRCS		外から指定
 # ・フォルダ外の追加ソースファイル								: ADD_SRCS		外から指定
@@ -10,6 +7,8 @@ SHELL := /bin/bash
 #   - 上記以外のカレントディレクトリに置かれているソースファイル
 #
 # 【ソース生成の観点】
+# ・C のソース													: SRCS_C
+# ・C++ のソース												: SRCS_CPP
 # ・シンボリックリンクが必要というソースファイル				: LINK_SRCS
 #   - inject ファイル および フィルタファイルがない
 # ・コピーが必要というソースファイル							: CP_SRCS
@@ -23,7 +22,7 @@ CP_SRCS := $(foreach src,$(TEST_SRCS) $(ADD_SRCS), \
 		$(wildcard $(notdir $(src)).filter.sh)), \
 		$(src)))
 DIRECT_SRCS := $(if $(filter-out $(CP_SRCS),$(TEST_SRCS) $(ADD_SRCS)),$(shell for f in $(filter-out $(CP_SRCS),$(TEST_SRCS) $(ADD_SRCS)); do \
-    if [ -f "./$$(basename $$f)" ] && [ ! -L "./$$(basename $$f)" ]; then \
+	if [ -f "./$$(basename $$f)" ] && [ ! -L "./$$(basename $$f)" ]; then \
 		echo $$f; \
 	fi; \
 	done))
@@ -149,8 +148,11 @@ else
 $(OBJS): $(LIBSFILES)
 endif
 
+# コンパイル時の依存関係に $(notdir $(LINK_SRCS)) $(notdir $(CP_SRCS)) を定義しているのは
+# ヘッダ類などを引き込んでおく必要がある場合に、先に処理を行っておきたいため
+
 # C ソースファイルのコンパイル
-$(OBJDIR)/%.o: %.c $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) | $(OBJDIR)
+$(OBJDIR)/%.o: %.c $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) $(notdir $(CP_SRCS)) | $(OBJDIR)
 	@set -o pipefail; if echo $(TEST_SRCS) | grep -q $(notdir $<); then \
 		echo LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 		LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
@@ -160,7 +162,7 @@ $(OBJDIR)/%.o: %.c $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) | $(OBJDIR)
 	fi
 
 # C++ ソースファイルのコンパイル (*.cc)
-$(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) | $(OBJDIR)
+$(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) $(notdir $(CP_SRCS)) | $(OBJDIR)
 	@set -o pipefail; if echo $(TEST_SRCS) | grep -q $(notdir $<); then \
 		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
@@ -170,7 +172,7 @@ $(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) | $(OBJDIR)
 	fi
 
 # C++ ソースファイルのコンパイル (*.cpp)
-$(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) | $(OBJDIR)
+$(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) $(notdir $(CP_SRCS)) | $(OBJDIR)
 	@set -o pipefail; if echo $(TEST_SRCS) | grep -q $(notdir $<); then \
 		echo LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \
 		LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS_TEST) -coverage -D_IN_TEST_FRAMEWORK_ -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf; \

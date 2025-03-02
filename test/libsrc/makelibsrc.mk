@@ -6,6 +6,8 @@ SHELL := /bin/bash
 #   - 上記以外のカレントディレクトリに置かれているソースファイル
 #
 # 【ソース生成の観点】
+# ・C のソース													: SRCS_C
+# ・C++ のソース												: SRCS_CPP
 # ・シンボリックリンクが必要というソースファイル				: LINK_SRCS
 #   - inject ファイル および フィルタファイルがない
 # ・コピーが必要というソースファイル							: CP_SRCS
@@ -19,7 +21,7 @@ CP_SRCS := $(foreach src,$(ADD_SRCS), \
 		$(wildcard $(notdir $(src)).filter.sh)), \
 		$(src)))
 DIRECT_SRCS := $(if $(filter-out $(CP_SRCS),$(ADD_SRCS)),$(shell for f in $(filter-out $(CP_SRCS),$(ADD_SRCS)); do \
-    if [ -f "./$$(basename $$f)" ] && [ ! -L "./$$(basename $$f)" ]; then \
+	if [ -f "./$$(basename $$f)" ] && [ ! -L "./$$(basename $$f)" ]; then \
 		echo $$f; \
 	fi; \
 	done))
@@ -104,16 +106,19 @@ endif
 $(TARGETDIR)/$(TARGET): $(OBJS) | $(TARGETDIR)
 	ar rvs $@ $(OBJS)
 
+# コンパイル時の依存関係に $(notdir $(LINK_SRCS)) $(notdir $(CP_SRCS)) を定義しているのは
+# ヘッダ類などを引き込んでおく必要がある場合に、先に処理を行っておきたいため
+
 # C ソースファイルのコンパイル
-$(OBJDIR)/%.o: %.c $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) | $(OBJDIR) $(TARGETDIR)
+$(OBJDIR)/%.o: %.c $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) $(notdir $(CP_SRCS)) | $(OBJDIR) $(TARGETDIR)
 	set -o pipefail; LANG=$(FILES_LANG) $(CC) $(DEPFLAGS) $(CFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf
 
 # C++ ソースファイルのコンパイル (*.cc)
-$(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) | $(OBJDIR) $(TARGETDIR)
+$(OBJDIR)/%.o: %.cc $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) $(notdir $(CP_SRCS)) | $(OBJDIR) $(TARGETDIR)
 	set -o pipefail; LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf
 
 # C++ ソースファイルのコンパイル (*.cpp)
-$(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) | $(OBJDIR) $(TARGETDIR)
+$(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d $(notdir $(LINK_SRCS)) $(notdir $(CP_SRCS)) | $(OBJDIR) $(TARGETDIR)
 	set -o pipefail; LANG=$(FILES_LANG) $(CPP) $(DEPFLAGS) $(CPPFLAGS) -c -o $@ $< -fdiagnostics-color=always 2>&1 | nkf
 
 # シンボリックリンク対象のソースファイルをシンボリックリンク
@@ -185,13 +190,13 @@ all: clean $(TARGETDIR)/$(TARGET)
 
 .PHONY: clean
 clean:
+	-rm -f $(TARGETDIR)/$(TARGET)
 #	@if [ -f $(TARGETDIR)/$(TARGET) ]; then \
 #		for obj in $(OBJS); do \
 #			echo ar d $(TARGETDIR)/$(TARGET) $$(basename $$obj); \
 #			ar d $(TARGETDIR)/$(TARGET) $$(basename $$obj); \
 #		done; \
 #	fi
-	-rm -f $(TARGETDIR)/$(TARGET)
 #   シンボリックリンクされたソース、コピー対象のソースを削除する
 	-@if [ -n "$(wildcard $(notdir $(CP_SRCS) $(LINK_SRCS)))" ]; then \
 		echo rm -f $(notdir $(CP_SRCS) $(LINK_SRCS)); \

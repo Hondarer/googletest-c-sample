@@ -5,7 +5,7 @@ all : $(SUBDIRS)
 
 .PHONY: clean
 clean : $(SUBDIRS)
-	-rm ../lib/*.a
+#	-rm ../lib/*.a
 
 .PHONY: test
 test : $(SUBDIRS)
