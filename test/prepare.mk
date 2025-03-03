@@ -20,7 +20,7 @@ FILES_LANG := $(shell sh $(WORKSPACE_FOLDER)/test/cmnd/get_files_lang.sh)
 #$(info FILES_LANG: $(FILES_LANG));
 
 # makeflags.mk の検索
-MAKEFILES := $(shell \
+MAKEFLAGS_MK := $(shell \
 	dir=`pwd`; \
 	while [ "$$dir" != "/" ]; do \
 		if [ -f "$$dir/makeflags.mk" ]; then \
@@ -34,8 +34,8 @@ MAKEFILES := $(shell \
 )
 
 # 逆順にする
-MAKEFILES := $(foreach mkfile, $(shell seq $(words $(MAKEFILES)) -1 1), $(word $(mkfile), $(MAKEFILES)))
+MAKEFLAGS_MK := $(foreach mkfile, $(shell seq $(words $(MAKEFLAGS_MK)) -1 1), $(word $(mkfile), $(MAKEFLAGS_MK)))
 
 # makeflags.mk が存在すればインクルード
-#$(foreach mkfile, $(MAKEFILES), $(info include $(mkfile)) $(eval include $(mkfile)))
-$(foreach mkfile, $(MAKEFILES), $(eval include $(mkfile)))
+#$(foreach makeflags, $(MAKEFLAGS_MK), $(info include $(makeflags)) $(eval include $(makeflags)))
+$(foreach makeflags, $(MAKEFLAGS_MK), $(eval include $(makeflags)))

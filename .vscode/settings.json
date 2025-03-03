@@ -1,4 +1,4 @@
 {
-    "terminal.integrated.scrollback": 10000,
+    "terminal.integrated.scrollback": 20000,
     "makefile.configureOnOpen": false
 }
