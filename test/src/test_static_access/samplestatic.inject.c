@@ -2,9 +2,9 @@
 // このソースはテスト対象の末尾に結合されるので
 // static メンバーへのアクセサーを記載することで
 // テストプログラムから static メンバーにアクセスできる
-#ifndef _IN_TEST_FRAMEWORK_
+#ifndef _IN_TEST_SRC_
 #include "samplestatic.c"
-#endif // _IN_TEST_FRAMEWORK_
+#endif // _IN_TEST_SRC_
 
 #include "samplestatic.inject.h"
 
