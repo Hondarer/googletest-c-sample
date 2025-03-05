@@ -11,8 +11,13 @@ int delegate_real_scanf(const char * format, va_list arg_ptr)
     return vscanf(format, arg_ptr);
 }
 
-int mock_scanf(const char *fmt, ...)
+int mock_scanf(const char *file, const int line, const char *func, const char *fmt, ...)
 {
+    // avoid -Wunused-parameter
+    (void)file;
+    (void)line;
+    (void)func;
+
     va_list args;
     int rtc;
 
@@ -21,7 +26,7 @@ int mock_scanf(const char *fmt, ...)
 
     if (_mock_stdio != nullptr)
     {
-        rtc = _mock_stdio->scanf(fmt, args);
+        rtc = _mock_stdio->scanf(file, line, func, fmt, args);
     }
     else
     {

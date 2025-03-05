@@ -9,13 +9,16 @@ FILE *delegate_real_fopen(const char *filename, const char *modes)
     return fopen(filename, modes);
 }
 
-FILE *mock_fopen(const char *filename, const char *modes)
+FILE *mock_fopen(const char *file, const int line, const char *func, const char *filename, const char *modes)
 {
+    // avoid -Wunused-parameter
+    (void)func;
+
     FILE *fp;
 
     if (_mock_stdio != nullptr)
     {
-        fp = _mock_stdio->fopen(filename, modes);
+        fp = _mock_stdio->fopen(file, line, func, filename, modes);
     }
     else
     {
@@ -26,11 +29,11 @@ FILE *mock_fopen(const char *filename, const char *modes)
     {
         if (fp == NULL)
         {
-            printf("  > fopen %s, %c -> NULL\n", filename, *modes);
+            printf("  > fopen %s, %c from %s:%d -> NULL\n", filename, *modes, file, line);
         }
         else
         {
-            printf("  > fopen %s, %c -> %d\n", filename, *modes, fp->_fileno);
+            printf("  > fopen %s, %c from %s:%d -> %d\n", filename, *modes, file, line, fp->_fileno);
         }
     }
 

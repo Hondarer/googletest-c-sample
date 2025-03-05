@@ -24,7 +24,7 @@ TEST_F(test_samplelogger, normal_call)
     NiceMock<Mock_stdio> mock_stdio; // 宣言のないデフォルト Mock への呼び出し警告をしない
 
     // Pre-Assert
-    EXPECT_CALL(mock_stdio, fopen(_, _))
+    EXPECT_CALL(mock_stdio, fopen(_, _, _, _, _))
         .Times(1);
 
     // Act
@@ -40,7 +40,7 @@ TEST_F(test_samplelogger, fopen_failed)
     Mock_stdio mock_stdio;
 
     // Pre-Assert
-    EXPECT_CALL(mock_stdio, fopen(_, _))
+    EXPECT_CALL(mock_stdio, fopen(_, _, _, _, _))
         .WillOnce(InvokeWithoutArgs([]()
                                     { errno=EIO; return nullptr; })); // 5: I/O error
 
@@ -78,14 +78,14 @@ TEST_F(test_samplelogger, fclose_failed_completely_expect_call)
 
 #if 1
     // Pre-Assert
-    EXPECT_CALL(mock_stdio, fopen(_, _))
+    EXPECT_CALL(mock_stdio, fopen(_, _, _, _, _))
         .Times(1);
-    EXPECT_CALL(mock_stdio, fprintf(_, _))
+    EXPECT_CALL(mock_stdio, fprintf(_, _, _, _, _))
         .Times(1);
 #else
     // Pre-Assert
 #endif
-    EXPECT_CALL(mock_stdio, fclose(_))
+    EXPECT_CALL(mock_stdio, fclose(_, _, _, _))
         .WillOnce(InvokeWithoutArgs([]()
                                     { errno=EIO; return EOF; })); // 5: I/O error
 
@@ -126,7 +126,7 @@ TEST_F(test_samplelogger, fclose_failed_with_nicemock)
 #endif
 
     // Pre-Assert
-    EXPECT_CALL(mock_stdio, fclose(_))
+    EXPECT_CALL(mock_stdio, fclose(_, _, _, _))
         .WillOnce(InvokeWithoutArgs([]()
                                     { errno=EIO; return EOF; })); // 5: I/O error
 
