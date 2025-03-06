@@ -9,13 +9,13 @@ int delegate_real_access(const char *path, int amode)
     return access(path, amode);
 }
 
-int mock_access(const char *path, int amode)
+int mock_access(const char *file, const int line, const char *func, const char *path, int amode)
 {
     int rtc;
 
     if (_mock_unistd != nullptr)
     {
-        rtc = _mock_unistd->access(path, amode);
+        rtc = _mock_unistd->access(file, line, func, path, amode);
     }
     else
     {

@@ -8,7 +8,7 @@ extern "C"
 {
 #endif
 
-extern int mock_stat(const char *, struct stat *);
+extern int mock_stat(const char *, const int, const char *, const char *, struct stat *);
 
 #ifdef __cplusplus
 }
@@ -16,7 +16,7 @@ extern int mock_stat(const char *, struct stat *);
 
 #ifdef _IN_OVERRIDE_HEADER_STAT_H_
 
-#define stat(path, buf) mock_stat(path, buf)
+#define stat(path, buf) mock_stat(__FILE__, __LINE__, __func__, path, buf)
 
 #else // _IN_OVERRIDE_HEADER_STAT_H_
 
@@ -29,7 +29,7 @@ extern int delegate_real_stat(const char *, struct stat *);
 class Mock_sys_stat
 {
 public:
-MOCK_METHOD(int, stat, (const char *, struct stat *));
+MOCK_METHOD(int, stat, (const char *, const int, const char *, const char *, struct stat *));
 
     Mock_sys_stat();
     ~Mock_sys_stat();

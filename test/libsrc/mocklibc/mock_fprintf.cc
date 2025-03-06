@@ -11,7 +11,7 @@ int delegate_real_fprintf(FILE *stream, const char *str)
     return fprintf(stream, "%s", str);
 }
 
-int mock_fprintf(FILE *stream, const char *fmt, ...)
+int mock_fprintf(const char *file, const int line, const char *func, FILE *stream, const char *fmt, ...)
 {
     va_list args;
     char *str;
@@ -29,7 +29,7 @@ int mock_fprintf(FILE *stream, const char *fmt, ...)
     }
     else if (_mock_stdio != nullptr)
     {
-        rtc = _mock_stdio->fprintf(stream, str);
+        rtc = _mock_stdio->fprintf(file, line, func, stream, str);
     }
     else
     {
@@ -47,7 +47,7 @@ int mock_fprintf(FILE *stream, const char *fmt, ...)
             {
                 trimmed_str[len - 1] = '\0';
             }
-            printf("  > fprintf %d, %s -> %d\n", stream->_fileno, trimmed_str, rtc);
+            printf("  > fprintf %d, %s from %s:%d -> %d\n", stream->_fileno, trimmed_str, file, line, rtc);
             free(trimmed_str);
         }
     }

@@ -8,7 +8,7 @@ extern "C"
 {
 #endif
 
-    extern int mock_access(const char *, int);
+    extern int mock_access(const char *, const int, const char *, const char *, int);
 
 #ifdef __cplusplus
 }
@@ -16,7 +16,7 @@ extern "C"
 
 #ifdef _IN_OVERRIDE_HEADER_UNISTD_H_
 
-#define access(path, amode) mock_access(path, amode)
+#define access(path, amode) mock_access(__FILE__, __LINE__, __func__, path, amode)
 
 #else // _IN_OVERRIDE_HEADER_UNISTD_H_
 
@@ -29,7 +29,7 @@ extern int delegate_real_access(const char *, int);
 class Mock_unistd
 {
 public:
-    MOCK_METHOD(int, access, (const char *, int));
+    MOCK_METHOD(int, access, (const char *, const int, const char *, const char *, int));
 
     Mock_unistd();
     ~Mock_unistd();
