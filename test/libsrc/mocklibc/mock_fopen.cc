@@ -11,9 +11,6 @@ FILE *delegate_real_fopen(const char *filename, const char *modes)
 
 FILE *mock_fopen(const char *file, const int line, const char *func, const char *filename, const char *modes)
 {
-    // avoid -Wunused-parameter
-    (void)func;
-
     FILE *fp;
 
     if (_mock_stdio != nullptr)

@@ -11,9 +11,6 @@ void *delegate_real_memset(void *s, int c, size_t n)
 
 void *mock_memset(const char *file, const int line, const char *func, void *s, int c, size_t n)
 {
-    // avoid -Wunused-parameter
-    (void)func;
-
     void *result = NULL;
 
     if (_mock_string != nullptr)

@@ -11,9 +11,6 @@ int delegate_real_fflush(FILE *fp)
 
 int mock_fflush(const char *file, const int line, const char *func, FILE *fp)
 {
-    // avoid -Wunused-parameter
-    (void)func;
-
     int rtc;
 
     if (_mock_stdio != nullptr)

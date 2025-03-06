@@ -13,11 +13,6 @@ int delegate_real_scanf(const char * format, va_list arg_ptr)
 
 int mock_scanf(const char *file, const int line, const char *func, const char *fmt, ...)
 {
-    // avoid -Wunused-parameter
-    (void)file;
-    (void)line;
-    (void)func;
-
     va_list args;
     int rtc;
 

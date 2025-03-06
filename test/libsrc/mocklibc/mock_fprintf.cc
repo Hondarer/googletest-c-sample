@@ -13,9 +13,6 @@ int delegate_real_fprintf(FILE *stream, const char *str)
 
 int mock_fprintf(const char *file, const int line, const char *func, FILE *stream, const char *fmt, ...)
 {
-    // avoid -Wunused-parameter
-    (void)func;
-
     va_list args;
     char *str;
     int rtc;

@@ -11,9 +11,6 @@ int delegate_real_fclose(FILE *fp)
 
 int mock_fclose(const char *file, const int line, const char *func, FILE *fp)
 {
-    // avoid -Wunused-parameter
-    (void)func;
-
     int rtc;
     int fileno = fp->_fileno; // fclose 内にて初期化されるため、退避
 

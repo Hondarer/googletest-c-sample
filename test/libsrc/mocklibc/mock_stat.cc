@@ -9,13 +9,13 @@ int delegate_real_stat(const char *path, struct stat *buf)
     return stat(path, buf);
 }
 
-int mock_stat(const char *path, struct stat *buf)
+int mock_stat(const char *file, const int line, const char *func, const char *path, struct stat *buf)
 {
     int rtc;
 
     if (_mock_sys_stat != nullptr)
     {
-        rtc = _mock_sys_stat->stat(path, buf);
+        rtc = _mock_sys_stat->stat(file, line, func, path, buf);
     }
     else
     {
