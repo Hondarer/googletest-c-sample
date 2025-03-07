@@ -1,8 +1,9 @@
 #include <gmock/gmock.h>
 
+#include <test_com.h>
 #include <mock_string.h>
 
-int mock_memset_enable_trace = 0;
+using namespace testing;
 
 void *delegate_real_memset(void *s, int c, size_t n)
 {
@@ -22,15 +23,23 @@ void *mock_memset(const char *file, const int line, const char *func, void *s, i
         result = delegate_real_memset(s, c, n);
     }
 
-    if (mock_memset_enable_trace != 0)
+    if (getTraceLevel() > TRACE_NONE)
     {
-        if (result == NULL)
+        printf("  > memset 0x%p, 0x%02x, %ld", s, c, n);
+        if (getTraceLevel() >= TRACE_DETAIL)
         {
-            printf("  > memset 0x%p, 0x%02x, %ld from %s:%d -> NULL\n", s, c, n, file, line);
+            if (result == NULL)
+            {
+                printf(" from %s:%d -> NULL\n", file, line);
+            }
+            else
+            {
+                printf(" from %s:%d -> 0x%p\n", file, line, result);
+            }
         }
         else
         {
-            printf("  > memset 0x%p, 0x%02x, %ld from %s:%d -> 0x%p\n", s, c, n, file, line, result);
+            printf("\n");
         }
     }
 

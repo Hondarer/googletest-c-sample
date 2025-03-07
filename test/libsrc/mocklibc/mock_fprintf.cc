@@ -2,9 +2,10 @@
 
 #include <test_com.h>
 #include <mock_stdio.h>
+
 #include <stdarg.h>
 
-int mock_fprintf_enable_trace = 0;
+using namespace testing;
 
 int delegate_real_fprintf(FILE *stream, const char *str)
 {
@@ -36,7 +37,7 @@ int mock_fprintf(const char *file, const int line, const char *func, FILE *strea
         rtc = delegate_real_fprintf(stream, str);
     }
 
-    if (mock_fprintf_enable_trace != 0)
+    if (getTraceLevel() > TRACE_NONE)
     {
         size_t len = strlen(str);
         char *trimmed_str = (char *)malloc(len + 1);
@@ -47,8 +48,16 @@ int mock_fprintf(const char *file, const int line, const char *func, FILE *strea
             {
                 trimmed_str[len - 1] = '\0';
             }
-            printf("  > fprintf %d, %s from %s:%d -> %d\n", stream->_fileno, trimmed_str, file, line, rtc);
+            printf("  > fprintf %d, %s", stream->_fileno, trimmed_str);
             free(trimmed_str);
+            if (getTraceLevel() >= TRACE_DETAIL)
+            {
+                printf(" from %s:%d -> %d\n", file, line, rtc);
+            }
+            else
+            {
+                printf("\n");
+            }
         }
     }
 

@@ -22,8 +22,6 @@ extern "C"
 
 #include <gmock/gmock.h>
 
-extern int mock_memset_enable_trace;
-
 extern void *delegate_real_memset(void *, int, size_t);
 
 class Mock_string

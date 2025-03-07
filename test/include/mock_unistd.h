@@ -22,8 +22,6 @@ extern "C"
 
 #include <gmock/gmock.h>
 
-extern int mock_access_enable_trace;
-
 extern int delegate_real_access(const char *, int);
 
 class Mock_unistd

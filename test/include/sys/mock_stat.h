@@ -22,8 +22,6 @@ extern int mock_stat(const char *, const int, const char *, const char *, struct
 
 #include <gmock/gmock.h>
 
-extern int mock_stat_enable_trace;
-
 extern int delegate_real_stat(const char *, struct stat *);
 
 class Mock_sys_stat

@@ -1,8 +1,9 @@
 #include <gmock/gmock.h>
 
+#include <test_com.h>
 #include <sys/mock_stat.h>
 
-int mock_stat_enable_trace = 0;
+using namespace testing;
 
 int delegate_real_stat(const char *path, struct stat *buf)
 {
@@ -21,10 +22,18 @@ int mock_stat(const char *file, const int line, const char *func, const char *pa
     {
         rtc = delegate_real_stat(path, buf);
     }
-    
-    if (mock_stat_enable_trace != 0)
+
+    if (getTraceLevel() > TRACE_NONE)
     {
-        printf("  > stat %s -> %d\n", path, rtc);
+        printf("  > stat %s", path);
+        if (getTraceLevel() >= TRACE_DETAIL)
+        {
+            printf(" from %s:%d -> %d\n", file, line, rtc);
+        }
+        else
+        {
+            printf("\n");
+        }
     }
 
     return rtc;

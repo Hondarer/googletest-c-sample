@@ -2,11 +2,12 @@
 
 #include <test_com.h>
 #include <mock_stdio.h>
+
 #include <stdarg.h>
 
-int mock_scanf_enable_trace = 0;
+using namespace testing;
 
-int delegate_real_scanf(const char * format, va_list arg_ptr)
+int delegate_real_scanf(const char *format, va_list arg_ptr)
 {
     return vscanf(format, arg_ptr);
 }
@@ -30,9 +31,17 @@ int mock_scanf(const char *file, const int line, const char *func, const char *f
 
     va_end(args);
 
-    if (mock_scanf_enable_trace != 0)
+    if (getTraceLevel() > TRACE_NONE)
     {
-        // TODO:
+        printf("  > scanf %s", fmt);
+        if (getTraceLevel() >= TRACE_DETAIL)
+        {
+            printf(" from %s:%d -> %d\n", file, line, rtc);
+        }
+        else
+        {
+            printf("\n");
+        }
     }
 
     return rtc;

@@ -7,8 +7,6 @@
 
 using namespace testing;
 
-int mock_samplelogger_enable_trace = 0;
-
 int samplelogger(const int lvl, const char *fmt, ...)
 {
     va_list args;
@@ -29,18 +27,27 @@ int samplelogger(const int lvl, const char *fmt, ...)
         rtc = _mock_sample->samplelogger(lvl, str);
     }
 
-    if (mock_samplelogger_enable_trace != 0)
+    if (getTraceLevel() > TRACE_NONE)
     {
         // '\n' で終わっている場合はトレースが見にくくなるので `\n` を削除
         size_t len = strlen(str);
-        if (len > 0 && str[len - 1] == '\n') {
+        if (len > 0 && str[len - 1] == '\n')
+        {
             str[len - 1] = '\0';
         }
 
-        printf("  > samplelogger %d, %s -> %d\n", lvl, str, rtc);
+        printf("  > samplelogger %d, %s", lvl, str);
+        if (getTraceLevel() >= TRACE_DETAIL)
+        {
+            printf(" -> %d\n", rtc);
+        }
+        else
+        {
+            printf("\n");
+        }
     }
 
     free(str);
-    
+
     return rtc;
 }

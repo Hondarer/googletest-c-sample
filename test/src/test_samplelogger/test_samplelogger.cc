@@ -1,6 +1,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <test_com.h>
 #include <mock_stdio.h>
 
 #include <sampleinc.h>
@@ -11,10 +12,11 @@ class test_samplelogger : public Test
 {
     void SetUp() override
     {
-        mock_fclose_enable_trace = 1;
-        mock_fflush_enable_trace = 1;
-        mock_fopen_enable_trace = 1;
-        mock_fprintf_enable_trace = 1;
+        clearTraceLevel();
+        setTraceLevel("mock_fclose", TRACE_DETAIL);
+        setTraceLevel("mock_fflush", TRACE_DETAIL);
+        setTraceLevel("mock_fopen", TRACE_DETAIL);
+        setTraceLevel("mock_fprintf", TRACE_DETAIL);
     }
 };
 

@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include <gmock/gmock.h>
 
-extern int mock_samplelogger_enable_trace;
-
 class Mock_sample
 {
 public:
