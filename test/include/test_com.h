@@ -5,43 +5,38 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#ifdef __cplusplus
-extern "C"
+#include <gmock/gmock.h>
+
+using namespace std;
+
+namespace testing
 {
-#endif
+    extern AssertionResult FileExists(const string &);
+    extern AssertionResult FileNotExists(const string &);
+    extern AssertionResult FileContains(const string &, const string &);
+
+    constexpr int TRACE_NONE = 0;
+    constexpr int TRACE_INFO = 1;
+    constexpr int TRACE_DETAIL = 2;
 
     extern char *allocprintf(const char *, ...) __attribute__((format(printf, 1, 2)));
     extern char *allocvprintf(const char *, va_list) __attribute__((format(printf, 1, 0)));
 
-#ifdef __cplusplus
+    extern void clearTraceLevel();
+    extern int _getTraceLevel(const char *);
+    extern void setTraceLevel(const char *, int);
+
 }
-#endif
-
-#ifdef __cplusplus
-
-#include <gmock/gmock.h>
-
-#include <fstream>
-#include <iostream>
-
-using namespace std;
-using namespace testing;
-
-extern AssertionResult FileExists(const string &);
-
-#define EXPECT_FILE_EXISTS(file_path) \
-    EXPECT_TRUE(FileExists(file_path))
-
-extern AssertionResult FileNotExists(const string &);
 
 #define EXPECT_FILE_NOT_EXISTS(file_path) \
     EXPECT_TRUE(FileNotExists(file_path))
 
-extern AssertionResult FileContains(const string &, const string &);
+#define EXPECT_FILE_EXISTS(file_path) \
+    EXPECT_TRUE(FileExists(file_path))
 
 #define EXPECT_FILE_CONTAINS(file_path, expected_content) \
     EXPECT_TRUE(FileContains(file_path, expected_content))
 
-#endif // __cplusplus
+#define getTraceLevel() _getTraceLevel(__func__)
 
 #endif // _TEST_COM_H_

@@ -1,6 +1,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <test_com.h>
 #include <mock_stdio.h>
 #include <mock_sample.h>
 
@@ -12,7 +13,8 @@ class test_samplefunc : public Test
 {
     void SetUp() override
     {
-        mock_samplelogger_enable_trace = 1;
+        clearTraceLevel();
+        setTraceLevel("mock_samplelogger", TRACE_DETAIL);
     }
 };
 

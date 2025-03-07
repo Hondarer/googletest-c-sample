@@ -1,8 +1,9 @@
 #include <gmock/gmock.h>
 
+#include <test_com.h>
 #include <mock_stdio.h>
 
-int mock_fclose_enable_trace = 0;
+using namespace testing;
 
 int delegate_real_fclose(FILE *fp)
 {
@@ -22,10 +23,18 @@ int mock_fclose(const char *file, const int line, const char *func, FILE *fp)
     {
         rtc = delegate_real_fclose(fp);
     }
-    
-    if (mock_fclose_enable_trace != 0)
+
+    if (getTraceLevel() > TRACE_NONE)
     {
-        printf("  > fclose %d from %s:%d -> %d\n", fileno, file, line, rtc);
+        printf("  > fclose %d", fileno);
+        if (getTraceLevel() >= TRACE_DETAIL)
+        {
+            printf(" from %s:%d -> %d\n", file, line, rtc);
+        }
+        else
+        {
+            printf("\n");
+        }
     }
 
     return rtc;

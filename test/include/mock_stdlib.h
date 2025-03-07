@@ -22,8 +22,6 @@ extern "C"
 
 #include <gmock/gmock.h>
 
-extern int mock_calloc_enable_trace;
-
 extern void *delegate_real_calloc(size_t, size_t);
 
 class Mock_stdlib

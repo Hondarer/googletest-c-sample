@@ -1,8 +1,9 @@
 #include <gmock/gmock.h>
 
+#include <test_com.h>
 #include <mock_stdio.h>
 
-int mock_fflush_enable_trace = 0;
+using namespace testing;
 
 int delegate_real_fflush(FILE *fp)
 {
@@ -21,10 +22,18 @@ int mock_fflush(const char *file, const int line, const char *func, FILE *fp)
     {
         rtc = delegate_real_fflush(fp);
     }
-    
-    if (mock_fflush_enable_trace != 0)
+
+    if (getTraceLevel() > TRACE_NONE)
     {
-        printf("  > fflush %d from %s:%d -> %d\n", fp->_fileno, file, line, rtc);
+        printf("  > fflush %d", fp->_fileno);
+        if (getTraceLevel() >= TRACE_DETAIL)
+        {
+            printf(" from %s:%d -> %d\n", file, line, rtc);
+        }
+        else
+        {
+            printf("\n");
+        }
     }
 
     return rtc;

@@ -1,8 +1,9 @@
 #include <gmock/gmock.h>
 
+#include <test_com.h>
 #include <mock_unistd.h>
 
-int mock_access_enable_trace = 0;
+using namespace testing;
 
 int delegate_real_access(const char *path, int amode)
 {
@@ -22,9 +23,17 @@ int mock_access(const char *file, const int line, const char *func, const char *
         rtc = delegate_real_access(path, amode);
     }
 
-    if (mock_access_enable_trace != 0)
+    if (getTraceLevel() > TRACE_NONE)
     {
-        printf("  > access %s, %d -> %d\n", path, amode, rtc);
+        printf("  > access %s, %d", path, amode);
+        if (getTraceLevel() >= TRACE_DETAIL)
+        {
+            printf(" from %s:%d -> %d\n", file, line, rtc);
+        }
+        else
+        {
+            printf("\n");
+        }
     }
 
     return rtc;

@@ -1,6 +1,6 @@
 #include <test_com.h>
 
-char* allocprintf(const char *fmt, ...)
+char *testing::allocprintf(const char *fmt, ...)
 {
     va_list args;
     char *str;
@@ -12,7 +12,7 @@ char* allocprintf(const char *fmt, ...)
     return str;
 }
 
-char *allocvprintf(const char *fmt, va_list args)
+char *testing::allocvprintf(const char *fmt, va_list args)
 {
     va_list args_copy;
     int size;

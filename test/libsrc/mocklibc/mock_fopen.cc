@@ -1,8 +1,9 @@
 #include <gmock/gmock.h>
 
+#include <test_com.h>
 #include <mock_stdio.h>
 
-int mock_fopen_enable_trace = 0;
+using namespace testing;
 
 FILE *delegate_real_fopen(const char *filename, const char *modes)
 {
@@ -21,16 +22,24 @@ FILE *mock_fopen(const char *file, const int line, const char *func, const char 
     {
         fp = delegate_real_fopen(filename, modes);
     }
-    
-    if (mock_fopen_enable_trace != 0)
+
+    if (getTraceLevel() > TRACE_NONE)
     {
-        if (fp == NULL)
+        printf("  > fopen %s, %c", filename, *modes);
+        if (getTraceLevel() >= TRACE_DETAIL)
         {
-            printf("  > fopen %s, %c from %s:%d -> NULL\n", filename, *modes, file, line);
+            if (fp == NULL)
+            {
+                printf(" from %s:%d -> NULL\n", file, line);
+            }
+            else
+            {
+                printf(" from %s:%d -> %d\n", file, line, fp->_fileno);
+            }
         }
         else
         {
-            printf("  > fopen %s, %c from %s:%d -> %d\n", filename, *modes, file, line, fp->_fileno);
+            printf("\n");
         }
     }
 
