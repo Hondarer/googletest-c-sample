@@ -5,6 +5,14 @@
 
 using namespace testing;
 
+int delegate_fake_fflush(FILE *fp)
+{
+    // avoid -Wunused-parameter
+    (void)fp;
+
+    return 0;
+}
+
 int delegate_real_fflush(FILE *fp)
 {
     return fflush(fp);

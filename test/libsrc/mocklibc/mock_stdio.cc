@@ -26,6 +26,7 @@ Mock_stdio::Mock_stdio()
     ON_CALL(*this, fopen(_, _, _, _, _))
         .WillByDefault(Invoke([](Unused, Unused, Unused, const char *filename, const char *modes)
                               { return delegate_real_fopen(filename, modes); }));
+    reset_fake_fopen();
 
     ON_CALL(*this, fprintf(_, _, _, _, _))
         .WillByDefault(Invoke([](Unused, Unused, Unused, FILE *stream, const char *str)

@@ -34,12 +34,17 @@ extern "C"
 #include <gmock/gmock.h>
 
 extern int delegate_real_fclose(FILE *);
+extern int delegate_fake_fclose(FILE *);
 extern int delegate_real_fflush(FILE *);
+extern int delegate_fake_fflush(FILE *);
 extern FILE *delegate_real_fopen(const char *, const char *);
+extern FILE *delegate_fake_fopen(const char *, const char *);
+extern void reset_fake_fopen();
 extern int delegate_real_fprintf(FILE *, const char *);
 extern int delegate_fake_fprintf(FILE *, const char *);
 extern int delegate_real_vfprintf(FILE *, const char *);
 extern int delegate_fake_vfprintf(FILE *, const char *);
+
 extern int delegate_real_scanf(const char *, va_list) __attribute__((format(scanf, 1, 0)));
 
 class Mock_stdio
@@ -51,6 +56,7 @@ public:
     MOCK_METHOD(FILE *, fopen, (const char *, const int, const char *, const char *, const char *));
     MOCK_METHOD(int, fprintf, (const char *, const int, const char *, FILE *, const char *));
     MOCK_METHOD(int, vfprintf, (const char *, const int, const char *, FILE *, const char *));
+
     MOCK_METHOD(int, scanf, (const char *, const int, const char *, const char *, va_list));
 
     Mock_stdio();

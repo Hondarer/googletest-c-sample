@@ -3,7 +3,28 @@
 #include <test_com.h>
 #include <mock_stdio.h>
 
+#include <string.h>
+
 using namespace testing;
+
+static int fopen_id = 0;
+
+void reset_fake_fopen()
+{
+    fopen_id = 0;
+}
+
+FILE *delegate_fake_fopen(const char *filename, const char *modes)
+{
+    // avoid -Wunused-parameter
+    (void)filename;
+    (void)modes;
+
+    FILE *fp = (FILE *)malloc(sizeof(FILE));
+    fp->_fileno = ++fopen_id;
+
+    return fp;
+}
 
 FILE *delegate_real_fopen(const char *filename, const char *modes)
 {

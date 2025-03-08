@@ -26,25 +26,21 @@ TEST_F(test_samplelogger, normal_call)
     // Arrange
     NiceMock<Mock_stdio> mock_stdio; // 宣言のないデフォルト Mock への呼び出し警告をしない
 
-    // ダミーの fp
-    FILE fp;
-    memset(&fp, 0x00, sizeof(fp));
-    fp._fileno = 1;
-
     // Pre-Assert
     // すべてのファイル入出力を入れ替えてテスト
     EXPECT_CALL(mock_stdio, fopen(_, _, _, StrEq("/tmp/sample.log"), StrEq("a")))
-        .WillOnce(Return(&fp));
+        .WillOnce(Invoke([](Unused, Unused, Unused, const char *filename, const char *modes)
+                         { return delegate_fake_fopen(filename, modes); }));
 
-    EXPECT_CALL(mock_stdio, fprintf(_, _, _, &fp, _))
+    EXPECT_CALL(mock_stdio, fprintf(_, _, _, _, _))
         .WillOnce(Invoke([](Unused, Unused, Unused, FILE *stream, const char *str)
                          { return delegate_fake_fprintf(stream, str); }));
 
-    EXPECT_CALL(mock_stdio, vfprintf(_, _, _, &fp, _))
+    EXPECT_CALL(mock_stdio, vfprintf(_, _, _, _, _))
         .WillOnce(Invoke([](Unused, Unused, Unused, FILE *stream, const char *str)
                          { return delegate_fake_vfprintf(stream, str); }));
 
-    EXPECT_CALL(mock_stdio, fclose(_, _, _, &fp))
+    EXPECT_CALL(mock_stdio, fclose(_, _, _, _))
         .WillOnce(Return(0));
 
     // Act
@@ -96,27 +92,23 @@ TEST_F(test_samplelogger, fclose_failed_completely_expect_call)
     // Arrange
     Mock_stdio mock_stdio;
 
-    // ダミーの fp
-    FILE fp;
-    memset(&fp, 0x00, sizeof(fp));
-    fp._fileno = 1;
-
 #if 1
     // Pre-Assert
     EXPECT_CALL(mock_stdio, fopen(_, _, _, StrEq("/tmp/sample.log"), StrEq("a")))
-        .WillOnce(Return(&fp));
+        .WillOnce(Invoke([](Unused, Unused, Unused, const char *filename, const char *modes)
+                         { return delegate_fake_fopen(filename, modes); }));
 
-    EXPECT_CALL(mock_stdio, fprintf(_, _, _, &fp, _))
+    EXPECT_CALL(mock_stdio, fprintf(_, _, _, _, _))
         .WillOnce(Invoke([](Unused, Unused, Unused, FILE *stream, const char *str)
                          { return delegate_fake_fprintf(stream, str); }));
 
-    EXPECT_CALL(mock_stdio, vfprintf(_, _, _, &fp, _))
+    EXPECT_CALL(mock_stdio, vfprintf(_, _, _, _, _))
         .WillOnce(Invoke([](Unused, Unused, Unused, FILE *stream, const char *str)
                          { return delegate_fake_vfprintf(stream, str); }));
 #else
     // Pre-Assert
 #endif
-    EXPECT_CALL(mock_stdio, fclose(_, _, _, &fp))
+    EXPECT_CALL(mock_stdio, fclose(_, _, _, _))
         .WillOnce(InvokeWithoutArgs([]()
                                     { errno=EIO; return EOF; })); // 5: I/O error
 
@@ -156,24 +148,20 @@ TEST_F(test_samplelogger, fclose_failed_with_nicemock)
     Mock_stdio mock_stdio;
 #endif
 
-    // ダミーの fp
-    FILE fp;
-    memset(&fp, 0x00, sizeof(fp));
-    fp._fileno = 1;
-
     // Pre-Assert
     EXPECT_CALL(mock_stdio, fopen(_, _, _, StrEq("/tmp/sample.log"), StrEq("a")))
-        .WillOnce(Return(&fp));
+        .WillOnce(Invoke([](Unused, Unused, Unused, const char *filename, const char *modes)
+                         { return delegate_fake_fopen(filename, modes); }));
 
-    EXPECT_CALL(mock_stdio, fprintf(_, _, _, &fp, _))
+    EXPECT_CALL(mock_stdio, fprintf(_, _, _, _, _))
         .WillOnce(Invoke([](Unused, Unused, Unused, FILE *stream, const char *str)
                          { return delegate_fake_fprintf(stream, str); }));
 
-    EXPECT_CALL(mock_stdio, vfprintf(_, _, _, &fp, _))
+    EXPECT_CALL(mock_stdio, vfprintf(_, _, _, _, _))
         .WillOnce(Invoke([](Unused, Unused, Unused, FILE *stream, const char *str)
                          { return delegate_fake_vfprintf(stream, str); }));
 
-    EXPECT_CALL(mock_stdio, fclose(_, _, _, &fp))
+    EXPECT_CALL(mock_stdio, fclose(_, _, _, _))
         .WillOnce(InvokeWithoutArgs([]()
                                     { errno=EIO; return EOF; })); // 5: I/O error
 

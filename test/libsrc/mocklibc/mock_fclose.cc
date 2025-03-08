@@ -5,6 +5,13 @@
 
 using namespace testing;
 
+int delegate_fake_fclose(FILE *fp)
+{
+    free(fp);
+
+    return 0;
+}
+
 int delegate_real_fclose(FILE *fp)
 {
     return fclose(fp);
