@@ -8,7 +8,7 @@
             "program": "/bin/bash",
             "args": [
                 "-c",
-                "[ -f ./$(basename `pwd`) ] && ulimit -s `ulimit -H -s` && ./$(basename `pwd`) || { echo 'Error: Executable not found!'; exit 1; }"
+                "ulimit -s `ulimit -H -s` && ./$(basename `pwd`)"
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
