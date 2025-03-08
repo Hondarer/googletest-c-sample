@@ -7,16 +7,24 @@
 
 using namespace testing;
 
-int delegate_real_vfprintf(FILE *stream, const char *str)
+int delegate_real_vfprintf(const char *file, const int line, const char *func, FILE *stream, const char *str)
 {
+    // avoid -Wunused-parameter
+    (void)file;
+    (void)line;
+    (void)func;
+
     return fprintf(stream, "%s", str);
 }
 
-int delegate_fake_vfprintf(FILE *stream, const char *str)
+int delegate_fake_vfprintf(const char *file, const int line, const char *func, FILE *stream, const char *str)
 {
     // avoid -Wunused-parameter
+    (void)file;
+    (void)line;
+    (void)func;
     (void)stream;
-    
+
     return strlen(str);
 }
 
@@ -40,7 +48,7 @@ int mock_vfprintf(const char *file, const int line, const char *func, FILE *stre
     }
     else
     {
-        rtc = delegate_real_vfprintf(stream, str);
+        rtc = delegate_real_vfprintf(file, line, func, stream, str);
     }
 
     if (getTraceLevel() > TRACE_NONE)

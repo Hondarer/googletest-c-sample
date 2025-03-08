@@ -5,8 +5,13 @@
 
 using namespace testing;
 
-void *delegate_real_calloc(size_t __nmemb, size_t __size)
+void *delegate_real_calloc(const char *file, const int line, const char *func, size_t __nmemb, size_t __size)
 {
+    // avoid -Wunused-parameter
+    (void)file;
+    (void)line;
+    (void)func;
+
     return calloc(__nmemb, __size);
 }
 
@@ -20,7 +25,7 @@ void *mock_calloc(const char *file, const int line, const char *func, size_t __n
     }
     else
     {
-        result = delegate_real_calloc(__nmemb, __size);
+        result = delegate_real_calloc(file, line, func, __nmemb, __size);
     }
 
     if (getTraceLevel() > TRACE_NONE)

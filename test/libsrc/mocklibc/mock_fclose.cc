@@ -5,15 +5,25 @@
 
 using namespace testing;
 
-int delegate_fake_fclose(FILE *fp)
+int delegate_fake_fclose(const char *file, const int line, const char *func, FILE *fp)
 {
+    // avoid -Wunused-parameter
+    (void)file;
+    (void)line;
+    (void)func;
+
     free(fp);
 
     return 0;
 }
 
-int delegate_real_fclose(FILE *fp)
+int delegate_real_fclose(const char *file, const int line, const char *func, FILE *fp)
 {
+    // avoid -Wunused-parameter
+    (void)file;
+    (void)line;
+    (void)func;
+
     return fclose(fp);
 }
 
@@ -28,7 +38,7 @@ int mock_fclose(const char *file, const int line, const char *func, FILE *fp)
     }
     else
     {
-        rtc = delegate_real_fclose(fp);
+        rtc = delegate_real_fclose(file, line, func, fp);
     }
 
     if (getTraceLevel() > TRACE_NONE)

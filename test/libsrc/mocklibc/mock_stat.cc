@@ -5,8 +5,13 @@
 
 using namespace testing;
 
-int delegate_real_stat(const char *path, struct stat *buf)
+int delegate_real_stat(const char *file, const int line, const char *func, const char *path, struct stat *buf)
 {
+    // avoid -Wunused-parameter
+    (void)file;
+    (void)line;
+    (void)func;
+
     return stat(path, buf);
 }
 
@@ -20,7 +25,7 @@ int mock_stat(const char *file, const int line, const char *func, const char *pa
     }
     else
     {
-        rtc = delegate_real_stat(path, buf);
+        rtc = delegate_real_stat(file, line, func, path, buf);
     }
 
     if (getTraceLevel() > TRACE_NONE)

@@ -22,7 +22,7 @@ extern "C"
 
 #include <gmock/gmock.h>
 
-extern void *delegate_real_calloc(size_t, size_t);
+extern void *delegate_real_calloc(const char *, const int, const char *, size_t, size_t);
 
 class Mock_stdlib
 {

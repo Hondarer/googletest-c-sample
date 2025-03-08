@@ -9,8 +9,7 @@ Mock_string *_mock_string = nullptr;
 Mock_string::Mock_string()
 {
     ON_CALL(*this, memset(_, _, _, _, _, _))
-        .WillByDefault(Invoke([](Unused, Unused, Unused, void *s, int c, size_t n)
-                              { return delegate_real_memset(s, c, n); }));
+        .WillByDefault(Invoke(delegate_real_memset));
 
     _mock_string = this;
 }

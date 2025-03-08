@@ -9,9 +9,7 @@ Mock_stdlib *_mock_stdlib = nullptr;
 Mock_stdlib::Mock_stdlib()
 {
     ON_CALL(*this, calloc(_, _, _, _, _))
-        .WillByDefault(Invoke([](Unused, Unused, Unused, size_t __nmemb, size_t __size) {
-            return delegate_real_calloc(__nmemb, __size);
-        }));
+        .WillByDefault(Invoke(delegate_real_calloc));
 
     _mock_stdlib = this;
 }

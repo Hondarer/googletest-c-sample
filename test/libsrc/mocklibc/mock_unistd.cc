@@ -9,8 +9,7 @@ Mock_unistd *_mock_unistd = nullptr;
 Mock_unistd::Mock_unistd()
 {
     ON_CALL(*this, access(_, _, _, _, _))
-        .WillByDefault(Invoke([](Unused, Unused, Unused, const char *path, int amode)
-                              { return delegate_real_access(path, amode); }));
+        .WillByDefault(Invoke(delegate_real_access));
 
     _mock_unistd = this;
 }

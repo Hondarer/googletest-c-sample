@@ -5,16 +5,24 @@
 
 using namespace testing;
 
-int delegate_fake_fflush(FILE *fp)
+int delegate_fake_fflush(const char *file, const int line, const char *func, FILE *fp)
 {
     // avoid -Wunused-parameter
+    (void)file;
+    (void)line;
+    (void)func;
     (void)fp;
 
     return 0;
 }
 
-int delegate_real_fflush(FILE *fp)
+int delegate_real_fflush(const char *file, const int line, const char *func, FILE *fp)
 {
+    // avoid -Wunused-parameter
+    (void)file;
+    (void)line;
+    (void)func;
+
     return fflush(fp);
 }
 
@@ -28,7 +36,7 @@ int mock_fflush(const char *file, const int line, const char *func, FILE *fp)
     }
     else
     {
-        rtc = delegate_real_fflush(fp);
+        rtc = delegate_real_fflush(file, line, func, fp);
     }
 
     if (getTraceLevel() > TRACE_NONE)

@@ -5,8 +5,13 @@
 
 using namespace testing;
 
-void *delegate_real_memset(void *s, int c, size_t n)
+void *delegate_real_memset(const char *file, const int line, const char *func, void *s, int c, size_t n)
 {
+    // avoid -Wunused-parameter
+    (void)file;
+    (void)line;
+    (void)func;
+
     return memset(s, c, n);
 }
 
@@ -20,7 +25,7 @@ void *mock_memset(const char *file, const int line, const char *func, void *s, i
     }
     else
     {
-        result = delegate_real_memset(s, c, n);
+        result = delegate_real_memset(file, line, func, s, c, n);
     }
 
     if (getTraceLevel() > TRACE_NONE)

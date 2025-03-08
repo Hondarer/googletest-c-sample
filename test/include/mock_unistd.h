@@ -22,7 +22,7 @@ extern "C"
 
 #include <gmock/gmock.h>
 
-extern int delegate_real_access(const char *, int);
+extern int delegate_real_access(const char *, const int, const char *, const char *, int);
 
 class Mock_unistd
 {

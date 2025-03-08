@@ -5,8 +5,13 @@
 
 using namespace testing;
 
-int delegate_real_access(const char *path, int amode)
+int delegate_real_access(const char *file, const int line, const char *func, const char *path, int amode)
 {
+    // avoid -Wunused-parameter
+    (void)file;
+    (void)line;
+    (void)func;
+
     return access(path, amode);
 }
 
@@ -20,7 +25,7 @@ int mock_access(const char *file, const int line, const char *func, const char *
     }
     else
     {
-        rtc = delegate_real_access(path, amode);
+        rtc = delegate_real_access(file, line, func, path, amode);
     }
 
     if (getTraceLevel() > TRACE_NONE)

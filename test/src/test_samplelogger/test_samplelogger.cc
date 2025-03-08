@@ -24,24 +24,10 @@ class test_samplelogger : public Test
 TEST_F(test_samplelogger, normal_call)
 {
     // Arrange
-    NiceMock<Mock_stdio> mock_stdio; // 宣言のないデフォルト Mock への呼び出し警告をしない
+    NiceMock<Mock_stdio> mock_stdio;    // 宣言のないデフォルト Mock への呼び出し警告をしない
+    mock_stdio.switch_to_mock_fileio(); // ファイルアクセスに関する関数をすべてモックに差し替える
 
     // Pre-Assert
-    // すべてのファイル入出力を入れ替えてテスト
-    EXPECT_CALL(mock_stdio, fopen(_, _, _, StrEq("/tmp/sample.log"), StrEq("a")))
-        .WillOnce(Invoke([](Unused, Unused, Unused, const char *filename, const char *modes)
-                         { return delegate_fake_fopen(filename, modes); }));
-
-    EXPECT_CALL(mock_stdio, fprintf(_, _, _, _, _))
-        .WillOnce(Invoke([](Unused, Unused, Unused, FILE *stream, const char *str)
-                         { return delegate_fake_fprintf(stream, str); }));
-
-    EXPECT_CALL(mock_stdio, vfprintf(_, _, _, _, _))
-        .WillOnce(Invoke([](Unused, Unused, Unused, FILE *stream, const char *str)
-                         { return delegate_fake_vfprintf(stream, str); }));
-
-    EXPECT_CALL(mock_stdio, fclose(_, _, _, _))
-        .WillOnce(Return(0));
 
     // Act
     int rtc = samplelogger(LOG_INFO, "%s\n", "normal_call");
@@ -54,6 +40,7 @@ TEST_F(test_samplelogger, fopen_failed)
 {
     // Arrange
     Mock_stdio mock_stdio;
+    mock_stdio.switch_to_mock_fileio(); // ファイルアクセスに関する関数をすべてモックに差し替える
 
     // Pre-Assert
     EXPECT_CALL(mock_stdio, fopen(_, _, _, _, _))
@@ -77,34 +64,27 @@ TEST_F(test_samplelogger, fclose_failed_completely_expect_call)
     mock_stdio.cc:20:
         Function call: fopen(0x47ef52 pointing to "/tmp/sample.log", 0x47ef50 pointing to "a")
             Returns: 0x3043dea0
-    NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
-    > fopen /tmp/sample.log, a -> 3
 
     Uninteresting mock function call - taking default action specified at:
     mock_stdio.cc:23:
         Function call: fprintf(0x3043dea0, 0x3043da80 pointing to "[2] ")
             Returns: 4
-    NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
-    > fprintf 3, [2]  -> 4
-    > fclose 3 -> -1
     */
 
     // Arrange
     Mock_stdio mock_stdio;
+    mock_stdio.switch_to_mock_fileio(); // ファイルアクセスに関する関数をすべてモックに差し替える
 
 #if 1
     // Pre-Assert
     EXPECT_CALL(mock_stdio, fopen(_, _, _, StrEq("/tmp/sample.log"), StrEq("a")))
-        .WillOnce(Invoke([](Unused, Unused, Unused, const char *filename, const char *modes)
-                         { return delegate_fake_fopen(filename, modes); }));
+        .Times(1);
 
     EXPECT_CALL(mock_stdio, fprintf(_, _, _, _, _))
-        .WillOnce(Invoke([](Unused, Unused, Unused, FILE *stream, const char *str)
-                         { return delegate_fake_fprintf(stream, str); }));
+        .Times(1);
 
     EXPECT_CALL(mock_stdio, vfprintf(_, _, _, _, _))
-        .WillOnce(Invoke([](Unused, Unused, Unused, FILE *stream, const char *str)
-                         { return delegate_fake_vfprintf(stream, str); }));
+        .Times(1);
 #else
     // Pre-Assert
 #endif
@@ -129,16 +109,11 @@ TEST_F(test_samplelogger, fclose_failed_with_nicemock)
     mock_stdio.cc:20:
         Function call: fopen(0x47ef52 pointing to "/tmp/sample.log", 0x47ef50 pointing to "a")
             Returns: 0x3043dea0
-    NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
-    > fopen /tmp/sample.log, a -> 3
 
     Uninteresting mock function call - taking default action specified at:
     mock_stdio.cc:23:
         Function call: fprintf(0x3043dea0, 0x3043da80 pointing to "[2] ")
             Returns: 4
-    NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
-    > fprintf 3, [2]  -> 4
-    > fclose 3 -> -1
     */
 
     // Arrange
@@ -147,20 +122,9 @@ TEST_F(test_samplelogger, fclose_failed_with_nicemock)
 #else
     Mock_stdio mock_stdio;
 #endif
+    mock_stdio.switch_to_mock_fileio(); // ファイルアクセスに関する関数をすべてモックに差し替える
 
     // Pre-Assert
-    EXPECT_CALL(mock_stdio, fopen(_, _, _, StrEq("/tmp/sample.log"), StrEq("a")))
-        .WillOnce(Invoke([](Unused, Unused, Unused, const char *filename, const char *modes)
-                         { return delegate_fake_fopen(filename, modes); }));
-
-    EXPECT_CALL(mock_stdio, fprintf(_, _, _, _, _))
-        .WillOnce(Invoke([](Unused, Unused, Unused, FILE *stream, const char *str)
-                         { return delegate_fake_fprintf(stream, str); }));
-
-    EXPECT_CALL(mock_stdio, vfprintf(_, _, _, _, _))
-        .WillOnce(Invoke([](Unused, Unused, Unused, FILE *stream, const char *str)
-                         { return delegate_fake_vfprintf(stream, str); }));
-
     EXPECT_CALL(mock_stdio, fclose(_, _, _, _))
         .WillOnce(InvokeWithoutArgs([]()
                                     { errno=EIO; return EOF; })); // 5: I/O error

@@ -7,8 +7,13 @@
 
 using namespace testing;
 
-int delegate_real_scanf(const char *format, va_list arg_ptr)
+int delegate_real_scanf(const char *file, const int line, const char *func, const char *format, va_list arg_ptr)
 {
+    // avoid -Wunused-parameter
+    (void)file;
+    (void)line;
+    (void)func;
+
     return vscanf(format, arg_ptr);
 }
 
@@ -26,7 +31,7 @@ int mock_scanf(const char *file, const int line, const char *func, const char *f
     }
     else
     {
-        rtc = delegate_real_scanf(fmt, args);
+        rtc = delegate_real_scanf(file, line, func, fmt, args);
     }
 
     va_end(args);

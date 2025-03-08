@@ -14,9 +14,12 @@ void reset_fake_fopen()
     fopen_id = 0;
 }
 
-FILE *delegate_fake_fopen(const char *filename, const char *modes)
+FILE *delegate_fake_fopen(const char *file, const int line, const char *func, const char *filename, const char *modes)
 {
     // avoid -Wunused-parameter
+    (void)file;
+    (void)line;
+    (void)func;
     (void)filename;
     (void)modes;
 
@@ -26,8 +29,13 @@ FILE *delegate_fake_fopen(const char *filename, const char *modes)
     return fp;
 }
 
-FILE *delegate_real_fopen(const char *filename, const char *modes)
+FILE *delegate_real_fopen(const char *file, const int line, const char *func, const char *filename, const char *modes)
 {
+    // avoid -Wunused-parameter
+    (void)file;
+    (void)line;
+    (void)func;
+
     return fopen(filename, modes);
 }
 
@@ -41,7 +49,7 @@ FILE *mock_fopen(const char *file, const int line, const char *func, const char 
     }
     else
     {
-        fp = delegate_real_fopen(filename, modes);
+        fp = delegate_real_fopen(file, line, func, filename, modes);
     }
 
     if (getTraceLevel() > TRACE_NONE)

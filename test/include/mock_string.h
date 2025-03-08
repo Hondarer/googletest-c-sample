@@ -22,7 +22,7 @@ extern "C"
 
 #include <gmock/gmock.h>
 
-extern void *delegate_real_memset(void *, int, size_t);
+extern void *delegate_real_memset(const char *, const int, const char *, void *, int, size_t);
 
 class Mock_string
 {

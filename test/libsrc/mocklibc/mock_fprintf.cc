@@ -7,16 +7,24 @@
 
 using namespace testing;
 
-int delegate_real_fprintf(FILE *stream, const char *str)
+int delegate_real_fprintf(const char *file, const int line, const char *func, FILE *stream, const char *str)
 {
+    // avoid -Wunused-parameter
+    (void)file;
+    (void)line;
+    (void)func;
+
     return fprintf(stream, "%s", str);
 }
 
-int delegate_fake_fprintf(FILE *stream, const char *str)
+int delegate_fake_fprintf(const char *file, const int line, const char *func, FILE *stream, const char *str)
 {
     // avoid -Wunused-parameter
+    (void)file;
+    (void)line;
+    (void)func;
     (void)stream;
-    
+
     return strlen(str);
 }
 
@@ -42,7 +50,7 @@ int mock_fprintf(const char *file, const int line, const char *func, FILE *strea
     }
     else
     {
-        rtc = delegate_real_fprintf(stream, str);
+        rtc = delegate_real_fprintf(file, line, func, stream, str);
     }
 
     if (getTraceLevel() > TRACE_NONE)
