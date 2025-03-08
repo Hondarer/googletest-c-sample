@@ -12,7 +12,7 @@ class test_samplelogger : public Test
 {
     void SetUp() override
     {
-        clearTraceLevel();
+        resetTraceLevel();
         setTraceLevel("mock_fclose", TRACE_DETAIL);
         setTraceLevel("mock_fflush", TRACE_DETAIL);
         setTraceLevel("mock_fopen", TRACE_DETAIL);

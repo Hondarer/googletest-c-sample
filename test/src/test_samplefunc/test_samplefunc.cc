@@ -13,7 +13,7 @@ class test_samplefunc : public Test
 {
     void SetUp() override
     {
-        clearTraceLevel();
+        resetTraceLevel();
         setTraceLevel("mock_samplelogger", TRACE_DETAIL);
     }
 };

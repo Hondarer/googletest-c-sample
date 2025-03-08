@@ -22,10 +22,10 @@ namespace testing
     extern char *allocprintf(const char *, ...) __attribute__((format(printf, 1, 2)));
     extern char *allocvprintf(const char *, va_list) __attribute__((format(printf, 1, 0)));
 
-    extern void clearTraceLevel();
+    extern void resetTraceLevel(int = TRACE_NONE);
     extern int _getTraceLevel(const char *);
+    extern void setDefaultTraceLevel(int);
     extern void setTraceLevel(const char *, int);
-
 }
 
 #define EXPECT_FILE_NOT_EXISTS(file_path) \
