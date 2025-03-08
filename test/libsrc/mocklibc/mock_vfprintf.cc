@@ -7,12 +7,12 @@
 
 using namespace testing;
 
-int delegate_real_fprintf(FILE *stream, const char *str)
+int delegate_real_vfprintf(FILE *stream, const char *str)
 {
     return fprintf(stream, "%s", str);
 }
 
-int delegate_fake_fprintf(FILE *stream, const char *str)
+int delegate_fake_vfprintf(FILE *stream, const char *str)
 {
     // avoid -Wunused-parameter
     (void)stream;
@@ -20,17 +20,15 @@ int delegate_fake_fprintf(FILE *stream, const char *str)
     return strlen(str);
 }
 
-int mock_fprintf(const char *file, const int line, const char *func, FILE *stream, const char *fmt, ...)
+int mock_vfprintf(const char *file, const int line, const char *func, FILE *stream, const char *fmt, va_list ap)
 {
-    va_list args;
+    va_list args_copy;
     char *str;
     int rtc;
 
-    // 可変引数リストを初期化
-    va_start(args, fmt);
-
-    str = allocvprintf(fmt, args);
-    va_end(args);
+    va_copy(args_copy, ap);
+    str = allocvprintf(fmt, args_copy);
+    va_end(args_copy);
 
     if (str == NULL)
     {
@@ -38,11 +36,11 @@ int mock_fprintf(const char *file, const int line, const char *func, FILE *strea
     }
     else if (_mock_stdio != nullptr)
     {
-        rtc = _mock_stdio->fprintf(file, line, func, stream, str);
+        rtc = _mock_stdio->vfprintf(file, line, func, stream, str);
     }
     else
     {
-        rtc = delegate_real_fprintf(stream, str);
+        rtc = delegate_real_vfprintf(stream, str);
     }
 
     if (getTraceLevel() > TRACE_NONE)
@@ -56,7 +54,7 @@ int mock_fprintf(const char *file, const int line, const char *func, FILE *strea
             {
                 trimmed_str[len - 1] = '\0';
             }
-            printf("  > fprintf %d, %s", stream->_fileno, trimmed_str);
+            printf("  > vfprintf %d, %s", stream->_fileno, trimmed_str);
             free(trimmed_str);
             if (getTraceLevel() >= TRACE_DETAIL)
             {

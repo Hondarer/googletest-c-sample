@@ -31,6 +31,10 @@ Mock_stdio::Mock_stdio()
         .WillByDefault(Invoke([](Unused, Unused, Unused, FILE *stream, const char *str)
                               { return delegate_real_fprintf(stream, str); }));
 
+    ON_CALL(*this, vfprintf(_, _, _, _, _))
+        .WillByDefault(Invoke([](Unused, Unused, Unused, FILE *stream, const char *str)
+                              { return delegate_real_vfprintf(stream, str); }));
+
     ON_CALL(*this, scanf(_, _, _, _, _))
         .WillByDefault(Invoke(delegate_real_scanf_with_unused));
 
