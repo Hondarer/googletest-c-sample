@@ -96,6 +96,7 @@ function run_test() {
 function main() {
     rm -rf results
     mkdir results
+    mkdir -p results/all_tests
 
     # google test は、GTEST_FILTER が定義されている場合は空文字でもフィルタを行う
     # そのため、指定があるかどうかは環境変数の有無をチェックする必要がある
@@ -104,6 +105,20 @@ function main() {
             echo "Note: GTEST_FILTER = $GTEST_FILTER"
         echo -e "\e[0m"
     fi
+
+    # テスト対象ソースの md5 を取得
+    echo -e "Test start on $(export LANG=C && date)." | tee -a results/all_tests/summary.log
+    tput cr
+    echo -e "----" | tee -a results/all_tests/summary.log
+    tput cr
+    echo -e "MD5 checksums of files in TEST_SRCS:" | tee -a results/all_tests/summary.log
+    tput cr
+    for src in $TEST_SRCS; do
+        md5sum "$src" | sed -e "s#$(realpath "$WORKSPACE_FOLDER")/##g" | tee -a results/all_tests/summary.log
+        tput cr
+    done
+    echo "----" | tee -a results/all_tests/summary.log
+    tput cr
 
     tests=$(list_tests)
     #tests=$(echo "$tests" | sort)
@@ -132,7 +147,6 @@ function main() {
     WARNING_COUNT=0
     FAILURE_COUNT=0
     make clean-cov > /dev/null
-    mkdir -p results/all_tests
 
     echo -e ""
     
@@ -142,6 +156,8 @@ function main() {
         echo -e "Note: GTEST_FILTER = $GTEST_FILTER\n" >> results/all_tests/results.log
         echo -e "Note: GTEST_FILTER = $GTEST_FILTER\n" >> results/all_tests/summary.log
     fi
+
+    echo "Test results:" >> results/all_tests/summary.log
 
     IFS=$'\n'
         for test_name_w_comment in $tests; do

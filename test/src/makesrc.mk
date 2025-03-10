@@ -202,8 +202,8 @@ define generate_cp_src_rule
 $(1): $(2) $(wildcard $(1).filter.sh) $(wildcard $(basename $(1)).inject$(suffix $(1))) $(filter $(1).filter.sh,$(notdir $(LINK_SRCS))) $(filter $(basename $(1)).inject$(suffix $(1)),$(notdir $(LINK_SRCS)))
 	@if [ -f "$(1).filter.sh" ]; then \
 		echo "cat $(2) | sh $(1).filter.sh > $(1)"; \
-		cat $(2) | sh $(1).filter.sh > $(1); \
-		diff $(2) $(1); set $?=0; \
+		cat $(2) | sh -e $(1).filter.sh > $(1) && \
+		diff $(2) $(1) | nkf && set $?=0; \
 	else \
 		echo "cp -p $(2) $(1)"; \
 		cp -p $(2) $(1); \
@@ -369,7 +369,7 @@ ifndef NO_LINK
 # テストの実行
 test: $(TESTSH) $(TARGETDIR)/$(TARGET)
 	@status=0; \
-	$(SHELL) $(TESTSH) > >(nkf) 2> >(nkf >&2) || status=$$?; \
+	export TEST_SRCS="$(TEST_SRCS)" && $(SHELL) $(TESTSH) > >(nkf) 2> >(nkf >&2) || status=$$?; \
 	exit $$status
 else
 # 何もしない
