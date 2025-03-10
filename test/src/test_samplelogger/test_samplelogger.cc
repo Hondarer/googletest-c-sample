@@ -24,7 +24,7 @@ class test_samplelogger : public Test
 TEST_F(test_samplelogger, normal_call)
 {
     // Arrange
-    NiceMock<Mock_stdio> mock_stdio;    // 宣言のないデフォルト Mock への呼び出し警告をしない
+    NiceMock<Mock_stdio> mock_stdio;    // モックの呼び出しチェックを省略
     mock_stdio.switch_to_mock_fileio(); // ファイルアクセスに関する関数をすべてモックに差し替える
 
     // Pre-Assert
@@ -58,7 +58,7 @@ TEST_F(test_samplelogger, fclose_failed_completely_expect_call)
 {
     /*
     Mock の各メソッドは必ず検証するか、NiceMock を使用すること。
-    NiceMock<Mock_stdio> でない場合、以下の警告が出力される。
+    NiceMock<Mock_stdio> でない場合、以下が出力される。
 
     Uninteresting mock function call - taking default action specified at:
     mock_stdio.cc:20:
@@ -103,7 +103,7 @@ TEST_F(test_samplelogger, fclose_failed_with_nicemock)
 {
     /*
     Mock の各メソッドは必ず検証するか、NiceMock を使用すること。
-    NiceMock<Mock_stdio> でない場合、以下の警告が出力される。
+    NiceMock<Mock_stdio> でない場合、以下が出力される。
 
     Uninteresting mock function call - taking default action specified at:
     mock_stdio.cc:20:

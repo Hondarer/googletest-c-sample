@@ -11,7 +11,7 @@ Mock_sample::Mock_sample()
 {
     ON_CALL(*this, samplelogger(_, _))
         .WillByDefault(Invoke([](Unused, const char *str)
-                              { return strlen(str); })); // NOTE: Unused を使うと未使用パラメータの警告を避け、かつ、未使用である旨が明確になる
+                              { return strlen(str); })); // NOTE: Unused を使うと未使用である旨が明確になる
 
     _mock_sample = this;
 }
