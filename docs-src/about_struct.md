@@ -16,12 +16,10 @@ void samplefunc()
 }
 ```
 
-拡張子が .c で上記コードが存在する場合は、
+拡張子が .c で上記コードが存在する場合は以下の対応が必要。
 
 1. コンパイラを g++ にする
 2. IntelliSense を c++ にする
-
-対応が必要。
 
 ## コンパイラを g++ にする
 
@@ -33,7 +31,7 @@ CC=g++
 
 ## IntelliSense を c++ にする
 
-ワークスペースの settings.json に、以下記載する。
+ワークスペースの settings.json に以下記載する。
 
 ```json
 "files.associations": {
