@@ -6,6 +6,8 @@
 !*.*
 # Makefileは管理対象
 !Makefile
+# testfwは管理対象
+!testfw
 
 # 以下は管理対象外
 test/lib

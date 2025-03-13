@@ -5,6 +5,7 @@
             "includePath": [
                 "/usr/local/include",
                 "${workspaceFolder}/prod/include",
+                "${workspaceFolder}/testfw/include",
                 "${workspaceFolder}/test/include"
             ],
             "defines": [

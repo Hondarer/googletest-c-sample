@@ -1,0 +1,3 @@
+[submodule "testfw"]
+	path = testfw
+	url = https://github.com/Hondarer/googletest-c-framework

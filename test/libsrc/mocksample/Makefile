@@ -11,7 +11,7 @@ WORKSPACE_FOLDER := $(shell \
 )
 
 # 準備処理 (Makefile テンプレートより前に include)
-include $(WORKSPACE_FOLDER)/test/prepare.mk
+include $(WORKSPACE_FOLDER)/testfw/makefiles/prepare.mk
 
 # libsrc の Makefile テンプレートを include
-include $(WORKSPACE_FOLDER)/test/libsrc/makelibsrc.mk
+include $(WORKSPACE_FOLDER)/testfw/makefiles/makelibsrc.mk

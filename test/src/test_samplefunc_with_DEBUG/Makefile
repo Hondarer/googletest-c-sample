@@ -11,7 +11,7 @@ WORKSPACE_FOLDER := $(shell \
 )
 
 # 準備処理 (Makefile テンプレートより前に include)
-include $(WORKSPACE_FOLDER)/test/prepare.mk
+include $(WORKSPACE_FOLDER)/testfw/makefiles/prepare.mk
 
 # テスト対象のソースファイル
 TEST_SRCS := \
@@ -30,4 +30,4 @@ CPPCOMFLAGS += -DDEBUG
 LIBS += -lmocklibc -lmocksample -ltestcom
 
 # src の Makefile テンプレートを include
-include $(WORKSPACE_FOLDER)/test/src/makesrc.mk
+include $(WORKSPACE_FOLDER)/testfw/makefiles/makesrc.mk
