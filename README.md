@@ -14,12 +14,13 @@ Linux 上の C コードを、VSCode から編集しデバッグを行う形態�
 
 - prod テスト対象 (前提として、製品コードを想定。このフォルダ以下は、テスト環境では触らない)
 - test テストコード
-    - cmnd テスト支援コマンド類
     - include テストコード用の include
     - include_override 製品コードをビルドする際に、注入したい差分 include
     - lib テストコードのアーカイブ
-    - libsrc テストコードの共有ソース (mock はよほど固有でない限り、ここに定義)
+    - libsrc テストコードの共有ソース
     - src テストコードのソース
+- testfw テストに用いる共通コード
+    - [googletest-c-framework](https://github.com/Hondarer/googletest-c-framework) を submodule として配置する。
 
 ## ビルド
 
@@ -59,8 +60,8 @@ src の各階層における部分テストにも対応。
 - g++
 - make
 - googletest (google mock)
-- nkf
-  ※ nkf は現在ではディストリビューションに同梱されないことが多いが、ソースが EUC-JP かつ VSCode でエラーログを日本語表示するために使用。
+- nkf  
+  ※ nkf は現在ではディストリビューションに同梱されないことが多いが、ソースが EUC-JP かつ VSCode でログを utf-8 に変換して出力するために使用。
 
 ## 任意コンポーネント
 
