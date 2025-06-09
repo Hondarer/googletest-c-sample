@@ -9,6 +9,7 @@
                 "${workspaceFolder}/test/include"
             ],
             "defines": [
+                "_DEFAULT_SOURCE", // __USE_MISC を有効にしてインテリセンスを効かせるため
                 "GOOGLETEST_C_SAMPLE"
             ],
             "compilerPath": "/usr/bin/gcc",
