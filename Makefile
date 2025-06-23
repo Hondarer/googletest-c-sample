@@ -6,6 +6,7 @@ default : submodule
 
 .PHONY: submodule
 submodule :
+	git submodule sync
 	git submodule update --init --recursive
 
 .PHONY: all
