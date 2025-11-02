@@ -14,7 +14,7 @@ WORKSPACE_FOLDER := $(shell \
 include $(WORKSPACE_FOLDER)/testfw/makefiles/prepare.mk
 
 # ライブラリの追加
-LIBS += -lrealsample -lmocklibc -lmocksample -ltestcom
+LIBS += -lreal_sample -lmock_libc -lmock_sample -ltest_com
 
 # src の Makefile テンプレートを include
 include $(WORKSPACE_FOLDER)/testfw/makefiles/makesrc.mk

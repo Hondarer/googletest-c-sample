@@ -71,3 +71,6 @@ CPPCOMFLAGS=\
 
 LDCOMFLAGS  =
 LIBSDIR     =
+
+# テストフレームワークをリンクする
+LINK_TEST   = 1

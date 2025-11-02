@@ -27,7 +27,7 @@ CCOMFLAGS += -DDEBUG
 CPPCOMFLAGS += -DDEBUG
 
 # ライブラリの追加
-LIBS += -lmocklibc -lmocksample -ltestcom
+LIBS += -lmock_libc -lmock_sample -ltest_com
 
 # src の Makefile テンプレートを include
 include $(WORKSPACE_FOLDER)/testfw/makefiles/makesrc.mk
